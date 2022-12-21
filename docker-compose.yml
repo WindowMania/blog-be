@@ -1,0 +1,14 @@
+version: "3.3"
+services:
+  mysql: # sudo apt-get install python3-dev default-libmysqlclient-dev build-essential 설치 해야함, https://iamiet.tistory.com/54
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: dev
+      MYSQL_ROOT_PASSWORD: 1234
+      TZ: Asia/Seoul
+    volumes:
+      - mysql-data:/var/lib/mysql
+volumes:
+  mysql-data:

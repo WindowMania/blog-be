@@ -1,0 +1,7 @@
+.idea
+venv
+*.lock
+
+*.prod
+.pytest_cache
+Footer
