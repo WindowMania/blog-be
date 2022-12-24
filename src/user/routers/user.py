@@ -1,11 +1,11 @@
 import logging
 import pydantic
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional
 from sqlalchemy.orm import Session
 from src.dependencies import get_transaction
 from src.user.aggregate.user import User
 from pydantic import BaseModel
+from src.infra.auth20 import Auth20
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["USER"])
@@ -30,4 +30,5 @@ async def create_user(transaction: Session = Depends(get_transaction)):
 
 @router.post("/auth20_login")
 async def auth20_login(req: Auth20LoginReq):
-    return req
+    ret = Auth20.auth(req.platform, req.access_key)
+    return ret
