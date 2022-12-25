@@ -3,7 +3,7 @@ import pydantic
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from src.dependencies import get_transaction
-from src.user.aggregate.user import User
+from src.user.aggregate.user_entity import UserEntity
 from pydantic import BaseModel
 from src.infra.auth20 import Auth20
 
@@ -22,7 +22,7 @@ class Auth20LoginReq(BaseModel):
 
 @router.get("/")
 async def create_user(transaction: Session = Depends(get_transaction)):
-    user = User("test", "1234", "bobo..")
+    user = UserEntity("test", "1234", "bobo..")
     transaction.add(user)
     transaction.commit()
     return "hi"

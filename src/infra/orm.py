@@ -2,7 +2,7 @@ import logging
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from src.user.aggregate.user import User
+from src.user.aggregate.user_entity import UserEntity
 
 logger = logging.getLogger(__name__)
 metadata = sa.MetaData()
@@ -23,4 +23,4 @@ user_table = sa.Table("user", metadata,
 
 def start_mappers():
     logger.info("Starting mappers")
-    user_mapper = orm.mapper(User, user_table)
+    user_mapper = orm.mapper(UserEntity, user_table)
