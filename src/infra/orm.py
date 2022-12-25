@@ -2,7 +2,7 @@ import logging
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from src.user.aggregate.user_entity import UserEntity
+from src.user.model import UserEntity
 
 logger = logging.getLogger(__name__)
 metadata = sa.MetaData()

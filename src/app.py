@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import logging
-from src.user.routers.user import router as user_router
+from src.routers import router as user_router
 from src.infra.orm import start_mappers
 from fastapi.middleware.cors import CORSMiddleware
 

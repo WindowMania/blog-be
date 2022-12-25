@@ -1,5 +1,6 @@
 from __future__ import annotations
 import abc
+from src.user.repository import UserRepository
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -18,18 +19,23 @@ class AbstractUnitOfWork(abc.ABC):
     def rollback(self):
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def flush(self):
+        raise NotImplementedError
 
-class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
+
+class UserUnitOfWork(AbstractUnitOfWork):
     def __init__(self, session_factory):
         self.session_factory = session_factory
 
     def __enter__(self):
         self.session = self.session_factory()  # type: Session
-        self.batches = repository.SqlAlchemyRepository(self.session)
+        self.users = UserRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, *args):
         super().__exit__(*args)
+        self.rollback()
         self.session.close()
 
     def commit(self):
@@ -37,3 +43,6 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def rollback(self):
         self.session.rollback()
+
+    def flush(self):
+        self.session.flush()

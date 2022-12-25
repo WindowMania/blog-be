@@ -1,9 +1,9 @@
 import logging
 import pydantic
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from src.dependencies import get_transaction
-from src.user.aggregate.user_entity import UserEntity
+from src.user.model import UserEntity
 from pydantic import BaseModel
 from src.infra.auth20 import Auth20
 

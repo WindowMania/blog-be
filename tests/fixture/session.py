@@ -5,6 +5,7 @@ from src.infra.config import MysqlSessionConfig
 from src.infra.db import create_persistence
 from migrate import Migrate
 from src.infra.orm import start_mappers
+from tests.mock.user_uow import UnCommitUserUnitOfWork
 
 
 @pytest.fixture(scope="session")
@@ -27,5 +28,11 @@ def session(db):
     session_maker = db['session_maker']
     session = session_maker()
     yield session
-    session.rollback()
-    # session.close()
+    session.close()
+
+
+@pytest.fixture(scope="function")
+def user_uow(db):
+    session_maker = db['session_maker']
+    uow = UnCommitUserUnitOfWork(session_maker)
+    yield uow
