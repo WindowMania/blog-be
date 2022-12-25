@@ -13,8 +13,8 @@ class AuthPlatform(str, Enum):
 class AuthResult(pydantic.BaseModel):
     client_id: str
     email: str
-    iss: str
     name: Optional[str]
+    iss: str
 
 
 class Auth20:

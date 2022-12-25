@@ -1,9 +1,6 @@
 from tests.fixture.session import *
 
-from src.user.repository import UserRepository
-from src.user.model import UserEntity
 import src.user.service as user_service
-from src.user.unit_of_work import UserUnitOfWork
 
 
 def test_create_user(user_uow):

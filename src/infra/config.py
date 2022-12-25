@@ -41,3 +41,12 @@ class MysqlSessionConfig(BaseSettings):
     def get_url(self):
         return f"mysql+pymysql://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@" \
                f"{self.DATABASE_ADDRESS}/{self.DATABASE_NAME}"
+
+
+class JwtConfig(BaseSettings):
+    JWT_SECRET_KEY: str
+
+    @staticmethod
+    def get_config(app_mode: AppMode = app_config.APP_MODE) -> JwtConfig:
+        Config.load_mode(app_mode)
+        return JwtConfig()

@@ -13,3 +13,6 @@ class UserRepository(SqlAlchemyRepository):
         return self.session.query(UserEntity) \
             .filter_by(account=account) \
             .first()
+
+    def get(self, ref) -> Optional[UserEntity]:
+        return super().get(ref)

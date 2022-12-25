@@ -4,6 +4,16 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 
 
+class JwtTimeoutError(Exception):
+    def __init__(self):
+        self.message = "jwt timeout"
+
+
+class JwtValidationError(Exception):
+    def __init__(self):
+        self.message = "jwt validation"
+
+
 class JwtContext:
 
     def __init__(self, secret_key: str, algorithm: str = "HS256", expire=30):
@@ -26,6 +36,8 @@ class JwtContext:
     def decode_token(self, token: str) -> Dict[str, str]:
         try:
             payload = jwt.decode(token, self.secret_key, self.algorithm)
+            if datetime.fromtimestamp(payload['exp']) < datetime.now():
+                raise JwtTimeoutError
             return payload
         except JWTError:
-            raise JWTError
+            raise JwtValidationError
