@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 import logging
-from src.routers import router as user_router
+from src.routers.user import router as user_router
 from src.infra.orm import start_mappers
 from fastapi.middleware.cors import CORSMiddleware
+
 
 def create_app() -> FastAPI:
     app_ = FastAPI()
