@@ -1,18 +1,23 @@
-# from typing import TypeVar, Generic, Optional
-#
-# ModelType = TypeVar("ModelType")
-# ModelId = TypeVar("ModelId")
-#
-#
-# class SqlAlchemyRepository(Generic[ModelId, ModelType]):
-#     @staticmethod
-#     def add(session, model: ModelType):
-#         session.add(model)
-#
-#     @staticmethod
-#     def get(session, id_: ModelId) -> Optional[ModelType]:
-#         print("어??", id_, ModelType)
-#         return session \
-#             .query(ModelType) \
-#             .filter_by(id=id_) \
-#             .first()
+from sqlalchemy.orm import Session
+
+
+class AbstractRepository:
+    def add(self, model):
+        raise NotImplementedError()
+
+    def get(self, ref):
+        raise NotImplementedError()
+
+
+class SqlAlchemyRepository(AbstractRepository):
+    def __init__(self, session: Session, model):
+        self.session = session
+        self.model = model
+
+    def add(self, model):
+        self.session.add(model)
+
+    def get(self, ref):
+        return self.session.query(self.model) \
+            .filter_by(id=ref) \
+            .first()
