@@ -76,11 +76,49 @@ class GithubOAuth(OAuth):
         return OAuthResponse(email=result['email'], nick_name=result['name'])
 
 
+class GoogleOAuth(OAuth):
+
+    def get_access_key(self, code: str) -> str:
+        URL = "https://oauth2.googleapis.com/token"
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            # "Accept": "application/json"
+        }
+        data = {
+            "code": code,
+            "client_id": self.client_id,
+            "client_secret": self.client_secret,
+            "grant_type": "authorization_code",
+            "redirect_uri": f"http://localhost:3000/callback?platform=google"
+        }
+        response = requests.post(URL, headers=headers, data=data)
+        if not response.ok:
+            raise OAuthError("google get access_key fail")
+        result = response.json()
+        return result["access_token"]
+
+    def get_oauth_response(self, access_key) -> OAuthResponse:
+        URL = f'https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_key}'
+        headers = {
+            "Authorization": f'token {access_key}',
+            "Accept": "application/json",
+        }
+        response = requests.get(URL, headers=headers)
+        if not response.ok:
+            raise OAuthError("google get user fail")
+        result = response.json()
+
+        return OAuthResponse(email=result['email'], nick_name=result['name'])
+
+
 class OAuthContext:
 
     def __init__(self, config: OAuthConfig):
         self.config = config
-        self.oauth_list = [GithubOAuth(OAuthPlatform.github, config.GITHUB_CLIENT_ID, config.GITHUB_CLIENT_SECRET)]
+        self.oauth_list = [
+            GithubOAuth(OAuthPlatform.github, config.GITHUB_CLIENT_ID, config.GITHUB_CLIENT_SECRET),
+            GoogleOAuth(OAuthPlatform.google, config.GOOGLE_CLIENT_ID, config.GOOGLE_CLIENT_SECRET)
+        ]
 
     def get_access_key(self, platform: OAuthPlatform, code: str):
         for o in self.oauth_list:
