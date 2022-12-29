@@ -50,3 +50,17 @@ class JwtConfig(BaseSettings):
     def get_config(app_mode: AppMode = app_config.APP_MODE) -> JwtConfig:
         Config.load_mode(app_mode)
         return JwtConfig()
+
+
+class OAuthConfig(BaseSettings):
+    GITHUB_CLIENT_ID: str
+    GITHUB_CLIENT_SECRET: str
+
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+
+    @staticmethod
+    def get_config(app_mode: AppMode = app_config.APP_MODE) -> OAuthConfig:
+        Config.load_mode(app_mode)
+        return OAuthConfig()
+

@@ -5,7 +5,7 @@ from src.infra.config import MysqlSessionConfig
 from src.infra.db import create_persistence
 from migrate import Migrate
 from src.infra.orm import start_mappers
-from tests.mock.user_uow import UnCommitUserUnitOfWork
+from tests.mock.user_uow import UnCommitSqlAlchemyUow
 
 
 @pytest.fixture(scope="session")
@@ -34,5 +34,5 @@ def session(db):
 @pytest.fixture(scope="function")
 def user_uow(db):
     session_maker = db['session_maker']
-    uow = UnCommitUserUnitOfWork(session_maker)
+    uow = UnCommitSqlAlchemyUow(session_maker)
     yield uow

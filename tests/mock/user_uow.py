@@ -1,7 +1,7 @@
-from src.user.unit_of_work import UserUnitOfWork
+from src.user.unit_of_work import SqlAlchemyUow
 
 
-class UnCommitUserUnitOfWork(UserUnitOfWork):
+class UnCommitSqlAlchemyUow(SqlAlchemyUow):
     def __init__(self, session_factory):
         super().__init__(session_factory)
 

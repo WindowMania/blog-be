@@ -24,7 +24,7 @@ class AbstractUnitOfWork(abc.ABC):
         raise NotImplementedError
 
 
-class UserUnitOfWork(AbstractUnitOfWork):
+class SqlAlchemyUow(AbstractUnitOfWork):
     def __init__(self, session_factory):
         self.session_factory = session_factory
 
@@ -40,6 +40,9 @@ class UserUnitOfWork(AbstractUnitOfWork):
 
     def commit(self):
         self.session.commit()
+
+    def detach_from_persistence(self):
+        self.session.expunge_all()
 
     def rollback(self):
         self.session.rollback()
