@@ -107,7 +107,6 @@ class GoogleOAuth(OAuth):
         if not response.ok:
             raise OAuthError("google get user fail")
         result = response.json()
-
         return OAuthResponse(email=result['email'], nick_name=result['name'])
 
 

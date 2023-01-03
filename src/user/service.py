@@ -2,7 +2,7 @@ import uuid
 import pydantic
 
 from src.user.unit_of_work import SqlAlchemyUow
-from src.user.model import UserEntity
+from src.user.model import UserEntity, UserStatus
 from typing import Optional
 
 from src.infra.jwt import JwtContext
@@ -15,12 +15,6 @@ from src.infra.hash import get_hash, verify_hash
 class NotExistUserError(Exception):
     def __init__(self):
         self.message = "not exist user"
-
-
-class UserCreateDto(pydantic.BaseModel):
-    account: str
-    password: str
-    nick_name: Optional[str]
 
 
 class UserDto(pydantic.BaseModel):
@@ -62,7 +56,7 @@ class UserService:
     def __init__(self, uow: SqlAlchemyUow):
         self.uow = uow
 
-    def create_user(self, create_dto: UserCreateDto) -> str:
+    def create_user(self, create_dto) -> str:
         # dto 검사..
         # 이미 있는지 확인
         with self.uow:
@@ -85,13 +79,13 @@ class UserAuthService:
     def reauthorize_by_oauth(self, code: str, platform: OAuthPlatform):
         access_key = self.oauth_ctx.get_access_key(platform, code)
         oauth_res = self.oauth_ctx.get_oauth_response(platform, access_key)
-
         with self.uow:
             user = self.uow.users.find_by_account(oauth_res.email)
             if not user:
-                create_dto = UserCreateDto(account=oauth_res.email, password=uuid.uuid4().hex,
-                                           nick_name=oauth_res.nick_name)
-                new_user_entity = UserEntity(**create_dto.dict())
+                new_user_entity = UserEntity(status=UserStatus.normal,
+                                             account=oauth_res.email,
+                                             password=uuid.uuid4().hex,
+                                             nick_name=oauth_res.nick_name)
                 self.uow.users.add(new_user_entity)
                 self.uow.commit()
             return self.jwt_ctx.create_access_token({"username": oauth_res.email})
