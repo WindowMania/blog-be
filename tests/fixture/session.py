@@ -35,4 +35,4 @@ def uow(db):
     session_maker = db['session_maker']
     uow__ = MockSqlAlchemyUow(session_maker)
     yield uow__
-    truncate(db['engine'])
+    # truncate(db['engine'])

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from src.infra.monad import Success
 from src.infra.validation import check_email
@@ -38,6 +38,25 @@ class UserCodeAuthentication:
     start_at: datetime
     end_at: datetime
 
+    def __init__(self,
+                 user_id: str,
+                 period: timedelta,
+                 method: UserCodeAuthenticationMethod = UserCodeAuthenticationMethod.email,
+                 code: str = uuid.uuid4().hex[:30]
+                 ):
+        self.id = uuid.uuid4().hex
+        self.user_id = user_id
+        self.method = method
+        self.code = code
+        self.start_at = datetime.now()
+        self.end_at = self.start_at + period
+
+    def is_valid_time(self) -> bool:
+        current = datetime.now()
+        if self.start_at <= current < self.end_at:
+            return True
+        return False
+
 
 class UserEntity:
     id: str
@@ -56,7 +75,7 @@ class UserEntity:
         self.password = password
         self.nick_name = nick_name
         self.status = status
-        self.code_authentication = []
+        self.code_authentication_list = []
 
     @staticmethod
     def __check_account(user_entity: UserEntity) -> UserEntity:
@@ -85,3 +104,8 @@ class UserEntity:
             .bind(UserEntity.__check_account) \
             .bind(UserEntity.__check_password)
         return ret
+
+    def add_code_authentication(self) -> str:
+        code_authentication = UserCodeAuthentication(self.id, timedelta(days=1))
+        self.code_authentication_list.append(code_authentication)
+        return code_authentication.code

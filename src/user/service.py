@@ -57,24 +57,30 @@ class UserDto(pydantic.BaseModel):
 #         return jwt_ctx.create_access_token({"username": oauth_ctx.email})
 #
 
+class CreateUserResult(pydantic.BaseModel):
+    user_id: str
+    join_authentication_code: str
+
+
 class UserService:
     def __init__(self, uow: SqlAlchemyUow):
         self.uow = uow
 
-    def create_user(self, email: str, password: str, nick_name: str = "noname") -> str:
-
+    def create_user(self, email: str, password: str, nick_name: str = "noname") -> CreateUserResult:
+        # 파라메터 다 체크 해야하는데, 귀찮아서 일단 스킵.
         with self.uow:
             user = self.uow.users.find_by_account(account=email)
             if user:
                 raise FailCreateUser("이미 존재 하는 유저")
-
             new_user_entity = UserEntity(account=email, status=UserStatus.sign, password=password, nick_name=nick_name)
             result = new_user_entity.check_join()
             if not result:
                 raise FailCreateUser(result.get_error_message())
+            auth_code = new_user_entity.add_code_authentication()
             self.uow.users.add(new_user_entity)
             self.uow.commit()
-            return new_user_entity.id
+            return CreateUserResult(user_id=new_user_entity.id,
+                                    join_authentication_code=auth_code)
 
 
 class UserAuthService:
