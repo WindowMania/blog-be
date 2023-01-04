@@ -1,11 +1,10 @@
 import pytest
-from sqlalchemy.orm import Session, sessionmaker
 
 from src.infra.config import MysqlSessionConfig
-from src.infra.db import create_persistence
+from src.infra.db import create_persistence, truncate
 from migrate import Migrate
 from src.infra.orm import start_mappers
-from tests.mock.user_uow import UnCommitSqlAlchemyUow
+from tests.mock.user_uow import MockSqlAlchemyUow
 
 
 @pytest.fixture(scope="session")
@@ -32,7 +31,8 @@ def session(db):
 
 
 @pytest.fixture(scope="function")
-def user_uow(db):
+def uow(db):
     session_maker = db['session_maker']
-    uow = UnCommitSqlAlchemyUow(session_maker)
-    yield uow
+    uow__ = MockSqlAlchemyUow(session_maker)
+    yield uow__
+    truncate(db['engine'])

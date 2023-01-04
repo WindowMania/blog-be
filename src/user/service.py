@@ -17,6 +17,11 @@ class NotExistUserError(Exception):
         self.message = "not exist user"
 
 
+class FailCreateUser(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
 class UserDto(pydantic.BaseModel):
     account: str
     nick_name: str
@@ -56,15 +61,20 @@ class UserService:
     def __init__(self, uow: SqlAlchemyUow):
         self.uow = uow
 
-    def create_user(self, create_dto) -> str:
-        # dto 검사..
-        # 이미 있는지 확인
+    def create_user(self, email: str, password: str, nick_name: str = "noname") -> str:
+
         with self.uow:
-            new_user_entity = UserEntity(**create_dto.dict())
+            user = self.uow.users.find_by_account(account=email)
+            if user:
+                raise FailCreateUser("이미 존재 하는 유저")
+
+            new_user_entity = UserEntity(account=email, status=UserStatus.sign, password=password, nick_name=nick_name)
+            result = new_user_entity.check_join()
+            if not result:
+                raise FailCreateUser(result.get_error_message())
             self.uow.users.add(new_user_entity)
             self.uow.commit()
             return new_user_entity.id
-        # 생성 실패..
 
 
 class UserAuthService:
