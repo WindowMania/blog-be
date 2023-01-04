@@ -2,7 +2,7 @@ import uuid
 import pydantic
 
 from src.user.unit_of_work import SqlAlchemyUow
-from src.user.model import UserEntity, UserStatus
+from src.user.models import UserEntity, UserStatus
 from typing import Optional
 
 from src.infra.jwt import JwtContext

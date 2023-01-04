@@ -7,7 +7,7 @@ from src.user.service import UserService, UserAuthService
 from src.infra.db import create_persistence, MysqlSessionConfig
 from src.infra.jwt import JwtContext
 from src.infra.config import JwtConfig, OAuthConfig
-from src.user.model import UserEntity
+from src.user.models import UserEntity
 from src.user.unit_of_work import SqlAlchemyUow
 from src.infra.oauth import OAuthContext
 

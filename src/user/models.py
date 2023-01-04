@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 import uuid
@@ -35,9 +35,12 @@ class UserEntity:
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 
+    code_authentication_list: List[UserCodeAuthentication]
+
     def __init__(self, status: UserStatus, account: str, password: str, nick_name: Optional[str]):
         self.id = uuid.uuid4().hex
         self.account = account
         self.password = password
         self.nick_name = nick_name
         self.status = status
+        self.code_authentication = []

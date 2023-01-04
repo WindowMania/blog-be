@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlalchemy.orm import Session
 
-from src.user.model import UserEntity
+from src.user.models import UserEntity
 from src.infra.repository import SqlAlchemyRepository
 
 
