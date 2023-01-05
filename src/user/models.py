@@ -99,7 +99,7 @@ class UserEntity:
             raise InvalidPassword(message="\n".join(messages))
         return user_entity
 
-    def check_join(self) -> Success[UserEntity]:
+    def validate_join(self) -> Success[UserEntity]:
         ret = Success(self) \
             .bind(UserEntity.__check_account) \
             .bind(UserEntity.__check_password)

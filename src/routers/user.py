@@ -1,12 +1,12 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Union
 
 from src.user.unit_of_work import SqlAlchemyUow
-from src.dependencies import get_user_auth_service, get_current_user
+from src.dependencies import get_user_auth_service, get_user_service, get_user_email_service
 from src.infra.oauth import OAuthPlatform
-from src.user.service import UserAuthService
+from src.user.services import UserAuthService, UserEmailService, UserService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["USER"])
@@ -26,27 +26,22 @@ class LoginReq(BaseModel):
     password: str
 
 
-# class Token(BaseModel):
-#     access_key: str
-#
-#
-# class UserRes(BaseModel):
-#     account: str
-#
+class JoinReq(BaseModel):
+    email: str
+    password: str
+    nick_name: str
 
-# @router.post("/reauthorize", response_model=Token)
-# async def oauth_login(req: Auth20LoginReq,
-#                       user_auth_service: UserAuthService = Depends(get_user_auth_service)
-#
-#                       ):
-#     user_auth_service.reauthorize_by_oauth(req.)
-#
-#     access_key = user_service.reauthorize(user_uow, jwt_ctx, req.platform, req.access_key)
-#     return Token(access_key=access_key)
 
-# @router.get("/me", response_model=UserRes)
-# async def get_current_user(current_user: UserEntity = Depends(get_current_user)):
-#     return UserRes(account=current_user.account)
+@router.post("/join")
+async def join(req: JoinReq,
+               user_service: UserService = Depends(get_user_service),
+               user_email_service: UserEmailService = Depends(get_user_email_service)
+               ):
+    try:
+        user_service.create_user(req.email, req.password, req.nick_name)
+        user_email_service.send_join_verify_email(req.email)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
 
 
 @router.post("/oauth", response_model=OAuthRes)

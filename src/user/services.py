@@ -3,11 +3,12 @@ import pydantic
 
 from src.user.unit_of_work import SqlAlchemyUow
 from src.user.models import UserEntity, UserStatus
-from typing import Optional
 
 from src.infra.jwt import JwtContext
 from src.infra.oauth import OAuthPlatform
 from src.infra.oauth import OAuthContext
+from src.infra.email import EmailContext
+from src.infra.config import Config
 
 from src.infra.hash import get_hash, verify_hash
 
@@ -27,39 +28,8 @@ class UserDto(pydantic.BaseModel):
     nick_name: str
 
 
-# def create_user(uow: SqlAlchemyUow, create_dto: UserCreateDto):
-#     # dto 검사..
-#     # 이미 있는지 확인
-#     with uow:
-#         new_user_entity = UserEntity(**create_dto.dict())
-#         uow.users.add(new_user_entity)
-#         uow.commit()
-#         return new_user_entity.id
-#     # 생성 실패..
-#
-#
-# def login_user(uow: SqlAlchemyUow, username: str, password: str):
-#     with uow:
-#         user = uow.users.find_by_account(username)
-#         if not user or not verify_hash(password, user.password):
-#             raise NotExistUserError
-#         return user
-#
-#
-# def reauthorize(uow: SqlAlchemyUow, jwt_ctx: JwtContext, platform: AuthPlatform, access_key: str) -> str:
-#     oauth_ctx = Auth20.auth(platform, access_key)
-#     # check client id
-#     with uow:
-#         user = uow.users.find_by_account(oauth_ctx.email)
-#         if not user:
-#             password = uuid.uuid4().hex
-#             UserCreateDto(account=oauth_ctx.email, password=get_hash(password), nick_name=oauth_ctx.name)
-#         return jwt_ctx.create_access_token({"username": oauth_ctx.email})
-#
-
 class CreateUserResult(pydantic.BaseModel):
     user_id: str
-    join_authentication_code: str
 
 
 class UserService:
@@ -73,14 +43,36 @@ class UserService:
             if user:
                 raise FailCreateUser("이미 존재 하는 유저")
             new_user_entity = UserEntity(account=email, status=UserStatus.sign, password=password, nick_name=nick_name)
-            result = new_user_entity.check_join()
+            result = new_user_entity.validate_join()
             if not result:
                 raise FailCreateUser(result.get_error_message())
-            auth_code = new_user_entity.add_code_authentication()
             self.uow.users.add(new_user_entity)
             self.uow.commit()
-            return CreateUserResult(user_id=new_user_entity.id,
-                                    join_authentication_code=auth_code)
+            return CreateUserResult(user_id=new_user_entity.id)
+
+
+class UserEmailService:
+    def __init__(self, uow: SqlAlchemyUow,
+                 conf: Config,
+                 email_ctx: EmailContext,
+                 ):
+        self.uow = uow
+        self.email_ctx = email_ctx
+        self.conf = conf
+
+    def send_join_verify_email(self, user_account: str):
+        with self.uow:
+            user = self.uow.users.find_by_account(account=user_account)
+            if not user:
+                raise NotExistUserError()
+            auth_code = user.add_code_authentication()
+            self.uow.users.add(user)
+            self.uow.commit()
+            title = "회원가입 인증 메일 입니다."
+            q = f"?code={auth_code}&user_account={user_account}"
+            message = self.conf.DOMAIN_FRONTEND + self.conf.JOIN_VERIFY_URL + q
+            print(message)
+            self.email_ctx.send_simple_text_email(user_account, title, message)
 
 
 class UserAuthService:

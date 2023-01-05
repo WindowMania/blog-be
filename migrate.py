@@ -1,4 +1,4 @@
-from src.infra.config import MysqlSessionConfig, AppMode
+from src.infra.config import Config, AppMode
 from alembic.command import upgrade as alembic_upgrade, downgrade as alembic_downgrade
 from alembic.config import Config as AlembicConfig
 from typing import Optional
@@ -11,9 +11,9 @@ class Migrate:
     @staticmethod
     def __setting(app_mode: AppMode) -> AlembicConfig:
         logger.info(f"migrate mode: {app_mode}")
-        db_config = MysqlSessionConfig.get_config(app_mode)
+        db_config = Config.get_config(app_mode)
         alembic_config = AlembicConfig('./alembic.ini')
-        alembic_config.set_main_option('sqlalchemy.url', db_config.get_url())
+        alembic_config.set_main_option('sqlalchemy.url', db_config.get_db_url())
         return alembic_config
 
     @staticmethod

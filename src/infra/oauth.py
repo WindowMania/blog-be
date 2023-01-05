@@ -6,7 +6,7 @@ import json
 import pydantic
 import requests
 
-from src.infra.config import OAuthConfig
+from src.infra.config import Config
 
 
 class OAuthError(Exception):
@@ -112,7 +112,7 @@ class GoogleOAuth(OAuth):
 
 class OAuthContext:
 
-    def __init__(self, config: OAuthConfig):
+    def __init__(self, config: Config):
         self.config = config
         self.oauth_list = [
             GithubOAuth(OAuthPlatform.github, config.GITHUB_CLIENT_ID, config.GITHUB_CLIENT_SECRET),

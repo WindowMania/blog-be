@@ -3,30 +3,35 @@ import pydantic
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 
-from src.user.service import UserService, UserAuthService
-from src.infra.db import create_persistence, MysqlSessionConfig
+from src.user.services import UserService, UserAuthService, UserEmailService
+from src.infra.db import create_persistence
 from src.infra.jwt import JwtContext
-from src.infra.config import JwtConfig, OAuthConfig
-from src.user.models import UserEntity
+from src.infra.config import Config
 from src.user.unit_of_work import SqlAlchemyUow
 from src.infra.oauth import OAuthContext
+from src.infra.email import SmtpGmail, MockSmtpGmail
 
-engine, sessionMaker = create_persistence(MysqlSessionConfig.get_config())
-jwt_config = JwtConfig.get_config()
-jwt_context = JwtContext(jwt_config.JWT_SECRET_KEY)
+conf = Config.get_config()
 
-oauth_config = OAuthConfig.get_config()
-oauth_context = OAuthContext(oauth_config)
+engine, sessionMaker = create_persistence(conf)
+
+jwt_context = JwtContext(conf.JWT_SECRET_KEY)
+oauth_context = OAuthContext(conf)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/user/login")
 uow = SqlAlchemyUow(sessionMaker)
 
 user_service = UserService(uow)
 user_auth_service = UserAuthService(uow, jwt_context, oauth_context)
+user_email_service = UserEmailService(uow, conf, MockSmtpGmail(conf.GMAIL_ACCOUNT, conf.GMAIL_PASSWORD))
 
 
 async def get_user_service():
     return user_service
+
+
+async def get_user_email_service():
+    return user_email_service
 
 
 async def get_user_auth_service():

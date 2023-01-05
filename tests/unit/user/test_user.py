@@ -1,6 +1,6 @@
 from tests.fixture.session import *
 
-from src.user.service import UserService, FailCreateUser
+from src.user.services import UserService, FailCreateUser
 
 
 def test_create_validation_user(uow):
