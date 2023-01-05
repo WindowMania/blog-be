@@ -50,12 +50,15 @@ class UserService:
             self.uow.commit()
             return CreateUserResult(user_id=new_user_entity.id)
 
-    def join_verify(self, account: str, code: str) -> bool:
+    def join_verify(self, account: str, code: str):
         with self.uow:
             user = self.uow.users.find_by_account_load_authcode(account=account)
             if not user:
                 raise NotExistUserError()
-            return user.validate_authentication_code(code=code)
+            user.validate_authentication_code(code=code)
+            user.status = UserStatus.normal
+            self.uow.users.add(user)
+            self.uow.commit()
 
 
 class UserEmailService:

@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy.orm import Session, lazyload, joinedload
+from sqlalchemy.orm import Session, joinedload
 
 from src.user.models import UserEntity
 from src.infra.repository import SqlAlchemyRepository
