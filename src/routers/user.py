@@ -32,6 +32,11 @@ class JoinReq(BaseModel):
     nick_name: str
 
 
+class JoinAuthCodeReq(BaseModel):
+    account: str
+    code: str
+
+
 @router.post("/join")
 async def join(req: JoinReq,
                user_service: UserService = Depends(get_user_service),
@@ -40,6 +45,17 @@ async def join(req: JoinReq,
     try:
         user_service.create_user(req.email, req.password, req.nick_name)
         user_email_service.send_join_verify_email(req.email)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.post("/join/verify")
+async def join(req: JoinAuthCodeReq,
+               user_service: UserService = Depends(get_user_service)
+               ):
+    try:
+        user_service.join_verify(account=req.account, code=req.code)
+        return "ok"
     except Exception as e:
         raise HTTPException(status_code=500, detail=e.message)
 

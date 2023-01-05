@@ -50,6 +50,13 @@ class UserService:
             self.uow.commit()
             return CreateUserResult(user_id=new_user_entity.id)
 
+    def join_verify(self, account: str, code: str) -> bool:
+        with self.uow:
+            user = self.uow.users.find_by_account_load_authcode(account=account)
+            if not user:
+                raise NotExistUserError()
+            return user.validate_authentication_code(code=code)
+
 
 class UserEmailService:
     def __init__(self, uow: SqlAlchemyUow,

@@ -17,6 +17,11 @@ class InvalidPassword(Exception):
         self.message = message
 
 
+class FailUserAuthCode(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
+
 class UserCodeAuthenticationMethod(str, Enum):
     email = "Email"
     phone = "phone"
@@ -109,3 +114,12 @@ class UserEntity:
         code_authentication = UserCodeAuthentication(self.id, timedelta(days=1))
         self.code_authentication_list.append(code_authentication)
         return code_authentication.code
+
+    def validate_authentication_code(self, code: str) -> bool:
+        r = [auth for auth in self.code_authentication_list if auth.code == code]
+        if not r:
+            raise FailUserAuthCode(f"{self.account}에 해당 인증 정보가 존재 하지 않습니다")
+        auth = r[0]
+        if not auth.is_valid_time():
+            raise FailUserAuthCode("유효 기간이 만료된 링크")
+        return True
