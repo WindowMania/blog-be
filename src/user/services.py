@@ -2,20 +2,17 @@ import uuid
 import pydantic
 
 from src.user.unit_of_work import SqlAlchemyUow
-from src.user.models import UserEntity, UserStatus
-
-from src.infra.jwt import JwtContext
-from src.infra.oauth import OAuthPlatform
-from src.infra.oauth import OAuthContext
+from src.user.models import UserEntity, UserStatus, LoginFailUserError
+from src.infra.jwt import JwtContext, JwtToken
+from src.infra.oauth import OAuthPlatform, OAuthContext
 from src.infra.email import EmailContext
 from src.infra.config import Config
-
 from src.infra.hash import get_hash, verify_hash
 
 
 class NotExistUserError(Exception):
     def __init__(self):
-        self.message = "not exist user"
+        self.message = "존재 하지 않는 유저"
 
 
 class FailCreateUser(Exception):
@@ -37,15 +34,18 @@ class UserService:
         self.uow = uow
 
     def create_user(self, email: str, password: str, nick_name: str = "noname") -> CreateUserResult:
-        # 파라메터 다 체크 해야하는데, 귀찮아서 일단 스킵.
         with self.uow:
             user = self.uow.users.find_by_account(account=email)
             if user:
                 raise FailCreateUser("이미 존재 하는 유저")
-            new_user_entity = UserEntity(account=email, status=UserStatus.sign, password=password, nick_name=nick_name)
+            new_user_entity = UserEntity(account=email,
+                                         status=UserStatus.sign,
+                                         password=password,
+                                         nick_name=nick_name)
             result = new_user_entity.validate_join()
             if not result:
                 raise FailCreateUser(result.get_error_message())
+            new_user_entity.set_hash_password(get_hash(password))
             self.uow.users.add(new_user_entity)
             self.uow.commit()
             return CreateUserResult(user_id=new_user_entity.id)
@@ -91,10 +91,17 @@ class UserAuthService:
         self.jwt_ctx = jwt_ctx
         self.oauth_ctx = oauth_ctx
 
-    def login_by_password(self):
-        pass
+    def login_by_password(self, account: str, password: str) -> JwtToken:
+        with self.uow:
+            user = self.uow.users.find_by_account(account)
+            if not user:
+                raise NotExistUserError()
+            if not verify_hash(password, user.password):
+                raise LoginFailUserError("잘못된 유저 정보")
+            user.check_possible_login()
+            return self.jwt_ctx.create_access_token({"username": user.account})
 
-    def reauthorize_by_oauth(self, code: str, platform: OAuthPlatform):
+    def reauthorize_by_oauth(self, code: str, platform: OAuthPlatform) -> JwtToken:
         access_key = self.oauth_ctx.get_access_key(platform, code)
         oauth_res = self.oauth_ctx.get_oauth_response(platform, access_key)
         with self.uow:

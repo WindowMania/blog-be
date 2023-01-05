@@ -7,6 +7,11 @@ from src.infra.validation import check_email
 import uuid
 
 
+class LoginFailUserError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
+
 class InvalidAccount(Exception):
     def __init__(self, message: str):
         self.message = message
@@ -123,3 +128,19 @@ class UserEntity:
         if not auth.is_valid_time():
             raise FailUserAuthCode("유효 기간이 만료된 링크")
         return True
+
+    def is_possible_login(self):
+        if self.status in [UserStatus.sign, UserStatus.resign, UserStatus.block]:
+            return False
+        return True
+
+    def check_possible_login(self):
+        if self.status == UserStatus.sign:
+            raise LoginFailUserError("인증 대기 중인 계정 입니다.")
+        elif self.status == UserStatus.block:
+            raise LoginFailUserError("정지 중인 계정 입니다.")
+        elif self.status == UserStatus.resign:
+            raise LoginFailUserError("삭제 계정 입니다.")
+
+    def set_hash_password(self, hashed_password: str):
+        self.password = hashed_password

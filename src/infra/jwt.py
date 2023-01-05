@@ -14,6 +14,16 @@ class JwtValidationError(Exception):
         self.message = "jwt validation"
 
 
+class JwtToken:
+
+    def __init__(self,
+                 access_key: str,
+                 exp: datetime
+                 ):
+        self.access_key = access_key
+        self.exp = exp
+
+
 class JwtContext:
 
     def __init__(self, secret_key: str, algorithm: str = "HS256", expire=30):
@@ -24,18 +34,18 @@ class JwtContext:
     def _get_default_expire(self):
         return timedelta(minutes=self.expire)
 
-    def create_access_token(self, data: dict, expire_delta: Optional[timedelta] = None) -> str:
+    def create_access_token(self, data: dict, expire_delta: Optional[timedelta] = None) -> JwtToken:
         to_encode = data.copy()
         expire = datetime.utcnow() + self._get_default_expire()
         if expire_delta and expire_delta > 0:
             expire = datetime.utcnow() + expire_delta
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
-        return encoded_jwt
+        return JwtToken(access_key=encoded_jwt, exp=expire)
 
-    def decode_token(self, token: str) -> Dict[str, str]:
+    def decode_token(self, access_token: str) -> Dict[str, str]:
         try:
-            payload = jwt.decode(token, self.secret_key, self.algorithm)
+            payload = jwt.decode(access_token, self.secret_key, self.algorithm)
             if datetime.fromtimestamp(payload['exp']) < datetime.now():
                 raise JwtTimeoutError
             return payload
