@@ -16,6 +16,12 @@ depends_on = None
 
 
 def upgrade() -> None:
+    op.create_table("tag",
+                    sa.Column("id", sa.String(length=255), primary_key=True),
+                    sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
+                    sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now()),
+                    )
+
     op.create_table("user",
                     sa.Column("id", sa.String(length=255), primary_key=True),
                     sa.Column("account", sa.String(length=255), nullable=False, unique=True),
@@ -36,7 +42,28 @@ def upgrade() -> None:
                     sa.Column("end_at", sa.DateTime(), nullable=False),
                     )
 
+    op.create_table("post",
+                    sa.Column("id", sa.String(length=255), primary_key=True),
+                    sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
+                    sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now()),
+                    sa.Column("deleted", sa.Boolean, default=False),
+                    sa.Column("user_id", sa.String(length=255), sa.ForeignKey("user.id"), nullable=False),
+                    sa.Column("title", sa.String(length=255), nullable=False),
+                    sa.Column("body", sa.String(length=255), nullable=False),
+                    )
+
+    op.create_table("post_tag",
+                    sa.Column("id", sa.String(length=255), primary_key=True),
+                    sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
+                    sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now()),
+                    sa.Column("post_id", sa.String(length=255), sa.ForeignKey("post.id"), nullable=False),
+                    sa.Column("tag_id", sa.String(length=255), sa.ForeignKey("tag.id"), nullable=False),
+                    )
+
 
 def downgrade() -> None:
+    op.drop_table("post_tag")
+    op.drop_table("post")
     op.drop_table("user_code_authentication")
     op.drop_table("user")
+    op.drop_table('tag')

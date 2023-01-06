@@ -81,7 +81,6 @@ class UserEntity:
     nick_name: Optional[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
-
     code_authentication_list: List[UserCodeAuthentication]
 
     def __init__(self, status: UserStatus, account: str, password: str, nick_name: Optional[str]):
