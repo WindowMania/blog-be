@@ -2,7 +2,7 @@ import uuid
 import pydantic
 
 from src.user.unit_of_work import SqlAlchemyUow
-from src.user.models import UserEntity, UserStatus, LoginFailUserError
+from src.user.models import UserEntity, UserStatus, FailUserLogin
 from src.infra.jwt import JwtContext, JwtToken
 from src.infra.oauth import OAuthPlatform, OAuthContext
 from src.infra.email import EmailContext
@@ -87,7 +87,7 @@ class UserAuthService:
             if not user:
                 raise NotExistUserError()
             if not verify_hash(password, user.password):
-                raise LoginFailUserError("잘못된 유저 정보")
+                raise FailUserLogin("잘못된 유저 정보")
             user.check_possible_login()
             return self.jwt_ctx.create_access_token({"username": user.account})
 

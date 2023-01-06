@@ -7,7 +7,7 @@ from src.infra.validation import check_email
 import uuid
 
 
-class LoginFailUserError(Exception):
+class FailUserLogin(Exception):
     def __init__(self, message: str):
         self.message = message
 
@@ -142,11 +142,11 @@ class UserEntity:
 
     def check_possible_login(self):
         if self.status == UserStatus.sign:
-            raise LoginFailUserError("인증 대기 중인 계정 입니다.")
+            raise FailUserLogin("인증 대기 중인 계정 입니다.")
         elif self.status == UserStatus.block:
-            raise LoginFailUserError("정지 중인 계정 입니다.")
+            raise FailUserLogin("정지 중인 계정 입니다.")
         elif self.status == UserStatus.resign:
-            raise LoginFailUserError("삭제 계정 입니다.")
+            raise FailUserLogin("삭제 계정 입니다.")
 
     def set_hash_password(self, hashed_password: str):
         self.password = hashed_password
