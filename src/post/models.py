@@ -47,3 +47,14 @@ class Post:
         self.body = body
         self.deleted = False
         self.post_tags = [PostTag(self.id, tag) for tag in tags]
+
+    def get_tag_id_list(self) -> List[str]:
+        return [pt.tag_id for pt in self.post_tags]
+
+    def update(self, title: str, body: str, tags: List[str]):
+        if title:
+            self.title = title
+        if body:
+            self.body = body
+        if tags:  # 확인 해봐야함.
+            self.post_tags = [PostTag(self.id, tag) for tag in tags]
