@@ -1,7 +1,7 @@
 import uuid
 import pydantic
 
-from src.user.unit_of_work import SqlAlchemyUow
+from src.unit_of_work import SqlAlchemyUow
 from src.user.models import UserEntity, UserStatus, FailUserLogin
 from src.infra.jwt import JwtContext, JwtToken
 from src.infra.oauth import OAuthPlatform, OAuthContext

@@ -1,8 +1,7 @@
 import time
+import pytest
 
-from tests.fixture.session import *
 from src.user.services import FailUserLogin, FailCreateUser
-from tests.fixture.user_services import user_service, user_email_service, user_auth_service
 
 
 def test_create_validation_user(user_service):

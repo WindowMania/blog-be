@@ -1,4 +1,4 @@
-from src.user.unit_of_work import SqlAlchemyUow
+from src.unit_of_work import SqlAlchemyUow
 
 
 class MockSqlAlchemyUow(SqlAlchemyUow):

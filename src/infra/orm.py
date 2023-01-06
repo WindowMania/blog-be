@@ -69,9 +69,9 @@ def start_mappers():
             )
         }
     )
-    post_mapper = orm.mapper(Post, post_table, properties={"user": orm.relationship(user_mapper)})
-    post_tag_mapper = orm.mapper(PostTag, post_tag_table,
-                                 properties={
-                                     "post": orm.relationship(post_mapper),
-                                     "tag": orm.relationship(tag_mapper)
-                                 })
+    post_tag_mapper = orm.mapper(PostTag, post_tag_table)
+
+    post_mapper = orm.mapper(Post, post_table, properties={
+        "user": orm.relationship(user_mapper),
+        "post_tags": orm.relationship(post_tag_mapper, cascade="all,delete-orphan")
+    })

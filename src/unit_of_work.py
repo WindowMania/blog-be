@@ -1,6 +1,7 @@
 from __future__ import annotations
 import abc
-from src.user.repository import UserRepository
+from src.user.repositories import UserRepository
+from src.post.repositories import PostRepository
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -31,6 +32,7 @@ class SqlAlchemyUow(AbstractUnitOfWork):
     def __enter__(self):
         self.session = self.session_factory()  # type: Session
         self.users = UserRepository(self.session)
+        self.posts = PostRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, *args):

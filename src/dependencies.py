@@ -1,5 +1,3 @@
-from typing import Generator
-import pydantic
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 
@@ -7,9 +5,9 @@ from src.user.services import UserService, UserAuthService, UserEmailService
 from src.infra.db import create_persistence
 from src.infra.jwt import JwtContext
 from src.infra.config import Config
-from src.user.unit_of_work import SqlAlchemyUow
+from src.unit_of_work import SqlAlchemyUow
 from src.infra.oauth import OAuthContext
-from src.infra.email import SmtpGmail, MockSmtpGmail
+from src.infra.email import MockSmtpGmail
 
 conf = Config.get_config()
 
