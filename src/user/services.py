@@ -50,16 +50,6 @@ class UserService:
             self.uow.commit()
             return CreateUserResult(user_id=new_user_entity.id)
 
-    def join_verify(self, account: str, code: str):
-        with self.uow:
-            user = self.uow.users.find_by_account_load_authcode(account=account)
-            if not user:
-                raise NotExistUserError()
-            user.validate_authentication_code(code=code)
-            user.status = UserStatus.normal
-            self.uow.users.add(user)
-            self.uow.commit()
-
 
 class UserEmailService:
     def __init__(self, uow: SqlAlchemyUow,
@@ -70,7 +60,7 @@ class UserEmailService:
         self.email_ctx = email_ctx
         self.conf = conf
 
-    def send_join_verify_email(self, user_account: str):
+    def send_join_verify_email(self, user_account: str) -> str:
         with self.uow:
             user = self.uow.users.find_by_account(account=user_account)
             if not user:
@@ -81,8 +71,8 @@ class UserEmailService:
             title = "회원가입 인증 메일 입니다."
             q = f"?code={auth_code}&user_account={user_account}"
             message = self.conf.DOMAIN_FRONTEND + self.conf.JOIN_VERIFY_URL + q
-            print(message)
             self.email_ctx.send_simple_text_email(user_account, title, message)
+            return auth_code
 
 
 class UserAuthService:
@@ -114,3 +104,13 @@ class UserAuthService:
                 self.uow.users.add(new_user_entity)
                 self.uow.commit()
             return self.jwt_ctx.create_access_token({"username": oauth_res.email})
+
+    def join_verify(self, account: str, code: str):
+        with self.uow:
+            user = self.uow.users.find_by_account_load_authcode(account=account)
+            if not user:
+                raise NotExistUserError()
+            user.validate_authentication_code(code=code)
+            user.status = UserStatus.normal
+            self.uow.users.add(user)
+            self.uow.commit()

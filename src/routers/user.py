@@ -1,10 +1,8 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Union
 from datetime import datetime
 
-from src.user.unit_of_work import SqlAlchemyUow
 from src.dependencies import get_user_auth_service, get_user_service, get_user_email_service
 from src.infra.oauth import OAuthPlatform
 from src.user.services import UserAuthService, UserEmailService, UserService
@@ -53,10 +51,10 @@ async def join(req: JoinReq,
 
 @router.post("/join/verify")
 async def join(req: JoinAuthCodeReq,
-               user_service: UserService = Depends(get_user_service)
+               user_auth_service: UserAuthService = Depends(get_user_auth_service)
                ):
     try:
-        user_service.join_verify(account=req.account, code=req.code)
+        user_auth_service.join_verify(account=req.account, code=req.code)
         return "ok"
     except Exception as e:
         raise HTTPException(status_code=500, detail=e.message)

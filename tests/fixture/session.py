@@ -1,23 +1,22 @@
 import pytest
 
-from src.infra.config import MysqlSessionConfig
+from src.infra.config import Config
 from src.infra.db import create_persistence, truncate
 from migrate import Migrate
 from src.infra.orm import start_mappers
-from tests.mock.user_uow import MockSqlAlchemyUow
+from tests.mock.uow import MockSqlAlchemyUow
 
 
 @pytest.fixture(scope="session")
 def db():
     start_mappers()
-    app_mode = 'test'
-    db_config = MysqlSessionConfig.get_config(app_mode)
+    db_config = Config.get_config('test')
     engine, session_maker = create_persistence(db_config)
     _db = {
         "engine": engine,
         "session_maker": session_maker
     }
-    Migrate.upgrade(app_mode)
+    Migrate.upgrade('test')
     yield _db
     engine.dispose()
 
@@ -35,4 +34,6 @@ def uow(db):
     session_maker = db['session_maker']
     uow__ = MockSqlAlchemyUow(session_maker)
     yield uow__
-    # truncate(db['engine'])
+    truncate(db['engine'])
+
+

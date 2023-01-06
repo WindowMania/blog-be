@@ -30,13 +30,16 @@ user_code_authentication = sa.Table("user_code_authentication", metadata,
 
 # https://docs.sqlalchemy.org/en/14/core/custom_types.html#sqlalchemy.types.TypeDecorator
 # https://stackoverflow.com/questions/66537764/sqlalchemy-how-can-i-map-a-database-valuecolumn-to-my-value-object-class
-
+# https://medium.com/pythonistas/i-like-lazy-relationships-do-you-sqlalchemy-relationship-loading-techniques-37d0fd43ac2
 
 def start_mappers():
     logger.info("Starting mappers")
     user_code_authentication_mapper = orm.mapper(UserCodeAuthentication, user_code_authentication)
-    user_mapper = orm.mapper(UserEntity, user_table,
-                             properties={
-                                 "code_authentication_list": orm.relationship(user_code_authentication_mapper)
-                             }
-                             )
+    user_mapper = orm.mapper(
+        UserEntity, user_table,
+        properties={
+            "code_authentication_list": orm.relationship(
+                user_code_authentication_mapper,
+            )
+        }
+    )
