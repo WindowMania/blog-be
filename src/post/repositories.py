@@ -23,3 +23,9 @@ class PostRepository(SqlAlchemyRepository):
             updated_at=func.current_timestamp(),
         )
         self.session.execute(on_duplicate_key_stmt)
+
+    def get_with_user(self, post_id: str):
+        return self.session.query(Post). \
+            options(joinedload(Post.user, Post.post_tags)). \
+            filter_by(id=post_id). \
+            first()

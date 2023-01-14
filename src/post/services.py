@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import List, Optional
+from datetime import datetime
 
 import pydantic
 
@@ -17,16 +18,24 @@ class PostDto(pydantic.BaseModel):
     title: str
     body: str
     tags: List[str]
+    username: str
+    created_at: datetime
+    updated_at: datetime
 
     @staticmethod
     def mapping(post: Post) -> Optional[PostDto]:
         if not Post:
             return None
+        user = post.user
+
         return PostDto(
             id=post.id,
             title=post.title,
             body=post.body,
-            tags=post.get_tag_id_list()
+            tags=post.get_tag_id_list(),
+            updated_at=post.updated_at,
+            created_at=post.created_at,
+            username=user.nick_name if user else 'unknown',
         )
 
 
@@ -52,6 +61,14 @@ class PostService:
         with self.uow:
             ret = self.uow.posts.get(id)
             return PostDto.mapping(ret)
+
+    def get_post_with_user(self, post_id: str) -> PostDto:
+        with self.uow:
+            post = self.uow.posts.get_with_user(post_id)
+            if not post:
+                raise NotFoundPost()
+
+            return PostDto.mapping(post)
 
     def create_post(self, writer_id: str, title: str, body: str, tags: List[str]) -> str:
         with self.uow:
