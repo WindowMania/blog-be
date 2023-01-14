@@ -8,6 +8,7 @@ from src.infra.config import Config
 from src.unit_of_work import SqlAlchemyUow
 from src.infra.oauth import OAuthContext
 from src.infra.email import MockSmtpGmail
+from src.post.services import PostService
 
 conf = Config.get_config()
 
@@ -22,10 +23,15 @@ uow = SqlAlchemyUow(sessionMaker)
 user_service = UserService(uow)
 user_auth_service = UserAuthService(uow, jwt_context, oauth_context)
 user_email_service = UserEmailService(uow, conf, MockSmtpGmail(conf.GMAIL_ACCOUNT, conf.GMAIL_PASSWORD))
+post_service = PostService(uow)
 
 
 async def get_user_service():
     return user_service
+
+
+async def get_post_service():
+    return post_service
 
 
 async def get_user_email_service():

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import logging
 from src.routers.user import router as user_router
+from src.routers.post import router as post_router
 from src.infra.orm import start_mappers
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -16,13 +17,14 @@ app = create_app()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
 logger = logging.getLogger(__name__)
 app.include_router(user_router, prefix='/api/v1/user')
+app.include_router(post_router, prefix="/api/v1/post")
 
 
 @app.on_event('startup')

@@ -48,6 +48,7 @@ class PostService:
             self.uow.commit()
 
     def get_post(self, id: str) -> Optional[PostDto]:
+        # post_tag 즉시 로딩 으로 가져올 것.
         with self.uow:
             ret = self.uow.posts.get(id)
             return PostDto.mapping(ret)
