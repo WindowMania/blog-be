@@ -24,10 +24,9 @@ class PostDto(pydantic.BaseModel):
 
     @staticmethod
     def mapping(post: Post) -> Optional[PostDto]:
-        if not Post:
+        if not post:
             return None
         user = post.user
-
         return PostDto(
             id=post.id,
             title=post.title,
