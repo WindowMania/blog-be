@@ -2,10 +2,9 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List
-from datetime import datetime
 
 from src.dependencies import get_post_service, get_current_user
-from src.post.services import PostService, PostDto
+from src.post.services import PostService, PostDto, PostUpdateDto, PostDynamicCondition
 from src.user.models import UserEntity
 
 logger = logging.getLogger(__name__)
@@ -14,12 +13,35 @@ router = APIRouter(tags=["POST"])
 
 class PostCreateReq(BaseModel):
     title: str
-    content: str
+    body: str
+    tags: List[str]
+
+
+class PostListReq(BaseModel):
+    page: int
+    perPage: int
+
+
+class PostListRes(BaseModel):
+    page: int
+    perPage: int
+    posts: List[PostDto]
+
+
+class PostUpdateReq(BaseModel):
+    id: str
+    title: str
+    body: str
     tags: List[str]
 
 
 class PostCreateRes(BaseModel):
-    post_id: str
+    id: str
+
+
+class PostDeleteReq(BaseModel):
+    id: str
+    deleted: bool
 
 
 @router.post('', response_model=PostCreateRes)
@@ -30,8 +52,35 @@ async def create_post(req: PostCreateReq,
     try:
         # 밑 태그 추가 하는 API 만들어야 한다..
         post_service.upsert_tag("All")
-        post_id = post_service.create_post(user.id, req.title, req.content, req.tags)
-        return PostCreateRes(post_id=post_id)
+        post_id = post_service.create_post(user.id, req.title, req.body, req.tags)
+        return PostCreateRes(id=post_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.put('')
+async def update_post(req: PostUpdateReq,
+                      post_service: PostService = Depends(get_post_service),
+                      user: UserEntity = Depends(get_current_user)):
+    try:
+        # 로그인 유저가 해당 게시글 수정 할 수 있는지 권한 체크 넣어야함.
+        # 지금은 일단 빼놨다.
+        post_update_dto: PostUpdateDto = PostUpdateDto(id=req.id, title=req.title, body=req.body, tags=req.tags)
+        post_service.update_post(post_update_dto)
+        return 'ok'
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.get('/list', response_model=PostListRes)
+async def get_list(page: int,
+                   perPage: int,
+                   post_service: PostService = Depends(get_post_service)
+                   ):
+    try:
+        cond = PostDynamicCondition(page=page, perPage=perPage, deleted=False)
+        posts = post_service.get_post_dynamic_list(cond)
+        return PostListRes(page=page, perPage=perPage, posts=posts)
     except Exception as e:
         raise HTTPException(status_code=500, detail=e.message)
 
@@ -39,6 +88,21 @@ async def create_post(req: PostCreateReq,
 @router.get("/{post_id}", response_model=PostDto)
 async def get_post(post_id: str, post_service: PostService = Depends(get_post_service)):
     try:
+        if not post_id or post_id == 'undefined':
+            exp = Exception()
+            exp.message = "잘못된 아이디"
+            raise exp
         return post_service.get_post(post_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.put('/set-delete')
+async def delete_post(req: PostDeleteReq,
+                      post_service: PostService = Depends(get_post_service),
+                      user: UserEntity = Depends(get_current_user)):
+    try:
+        post_service.set_delete_post(req.id, req.deleted)
+        return 'ok'
     except Exception as e:
         raise HTTPException(status_code=500, detail=e.message)

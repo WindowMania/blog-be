@@ -1,10 +1,17 @@
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from sqlalchemy.dialects.mysql import insert
-from sqlalchemy import func
+from sqlalchemy import func, desc
 
 from src.post.models import Post, Tag
 from src.infra.repository import SqlAlchemyRepository
+from pydantic import BaseModel
+
+
+class PostDynamicCondition(BaseModel):
+    page: int
+    perPage: int
+    deleted: bool
 
 
 class PostRepository(SqlAlchemyRepository):
@@ -26,6 +33,17 @@ class PostRepository(SqlAlchemyRepository):
 
     def get_with_user(self, post_id: str):
         return self.session.query(Post). \
-            options(joinedload(Post.user, Post.post_tags)). \
+            options(joinedload(Post.user), joinedload(Post.post_tags)). \
             filter_by(id=post_id). \
             first()
+
+    def get_post_dynamic_list(self, cond: PostDynamicCondition):
+        query = self.session.query(Post). \
+            options(joinedload(Post.user), joinedload(Post.post_tags)) \
+            .filter_by(deleted=cond.deleted)
+
+        return query \
+            .order_by(desc(Post.created_at)) \
+            .limit(cond.perPage) \
+            .offset((cond.page - 1) * cond.perPage) \
+            .all()

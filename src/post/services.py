@@ -5,7 +5,8 @@ from datetime import datetime
 import pydantic
 
 from src.unit_of_work import SqlAlchemyUow
-from src.post.models import Post, Tag
+from src.post.models import Post
+from src.post.repositories import PostDynamicCondition
 
 
 class NotFoundPost(Exception):
@@ -21,6 +22,7 @@ class PostDto(pydantic.BaseModel):
     username: str
     created_at: datetime
     updated_at: datetime
+    deleted: bool
 
     @staticmethod
     def mapping(post: Post) -> Optional[PostDto]:
@@ -35,6 +37,7 @@ class PostDto(pydantic.BaseModel):
             updated_at=post.updated_at,
             created_at=post.created_at,
             username=user.nick_name if user else 'unknown',
+            deleted=post.deleted
         )
 
 
@@ -76,10 +79,20 @@ class PostService:
             self.uow.commit()
             return new_post.id
 
+    def set_delete_post(self, post_id: str, deleted: bool) -> str:
+        with self.uow:
+            post = self.uow.posts.get(post_id)
+            if not Post:
+                raise NotFoundPost()
+            post.set_deleted(deleted)
+            self.uow.posts.add(post)
+            self.uow.commit()
+            return post.id
+
     def update_post(self, post_update_dto: PostUpdateDto):
         with self.uow:
             post = self.uow.posts.get(post_update_dto.id)
-            if not Post:
+            if not post:
                 raise NotFoundPost()
             post.update(
                 title=post_update_dto.title,
@@ -89,3 +102,8 @@ class PostService:
             self.uow.posts.add(post)
             self.uow.commit()
             return PostDto.mapping(post)
+
+    def get_post_dynamic_list(self, cond: PostDynamicCondition) -> List[PostDto]:
+        with self.uow:
+            posts = self.uow.posts.get_post_dynamic_list(cond)
+            return [PostDto.mapping(post) for post in posts]
