@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import time
 from typing import List, Optional
 from datetime import datetime
 
@@ -107,3 +109,22 @@ class PostService:
         with self.uow:
             posts = self.uow.posts.get_post_dynamic_list(cond)
             return [PostDto.mapping(post) for post in posts]
+
+
+class PostTestService:
+
+    def __init__(self, uow: SqlAlchemyUow):
+        self.uow = uow
+
+    def create_dummy_posts(self, writer_id: str):
+        title = str(int(time.time()))
+        print(title)
+        body = "Lorem ipsum dolor sit amet, consectetur adipisicing elit. \n" \
+               "Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, " \
+               "neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti?\n Eum quasi quidem quibusdam."
+        with self.uow:
+            for i in range(100):
+                new_post = Post(writer_id, str(i), body, ["All"])
+                time.sleep(1)
+                self.uow.posts.add(new_post)
+                self.uow.commit()

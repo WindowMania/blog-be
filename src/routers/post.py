@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List
 
-from src.dependencies import get_post_service, get_current_user
+from src.dependencies import get_post_service, get_current_user, get_post_test_service
 from src.post.services import PostService, PostDto, PostUpdateDto, PostDynamicCondition
 from src.user.models import UserEntity
 
@@ -106,3 +106,14 @@ async def delete_post(req: PostDeleteReq,
         return 'ok'
     except Exception as e:
         raise HTTPException(status_code=500, detail=e.message)
+
+
+# @router.post("/test/dummy")
+# async def create_dummy_post(post_test_service=Depends(get_post_test_service),
+#                             user: UserEntity = Depends(get_current_user)):
+#     try:
+#         print("뭐가??",user,user.id)
+#         post_test_service.create_dummy_posts(user.id)
+#     except Exception as e:
+#         print(e)
+#         raise HTTPException(status_code=500)
