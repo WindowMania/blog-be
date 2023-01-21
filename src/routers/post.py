@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import List
 
 from src.dependencies import get_post_service, get_current_user, get_post_test_service
-from src.post.services import PostService, PostDto, PostUpdateDto, PostDynamicCondition
+from src.post.services import PostService, PostDto, PostUpdateDto, PostDynamicCondition, TagStatistics
 from src.user.models import UserEntity
 
 logger = logging.getLogger(__name__)
@@ -46,6 +46,10 @@ class PostDeleteReq(BaseModel):
 
 class TagReq(BaseModel):
     tag: str
+
+
+class TagStatisticsRes(BaseModel):
+    tags: List[TagStatistics]
 
 
 @router.post('', response_model=PostCreateRes)
@@ -145,6 +149,17 @@ async def delete_tag(name: str,
     try:
         post_service.delete_tag(name)
         return 'ok'
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500)
+
+
+@router.get("/tag/statistics", response_model=TagStatisticsRes)
+async def get_tag_statistics(post_service=Depends(get_post_service)):
+    try:
+        tags = post_service.get_tag_statistics()
+        print(tags)
+        return TagStatisticsRes(tags=tags)
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500)

@@ -15,6 +15,11 @@ class PostDynamicCondition(BaseModel):
     deleted: bool
 
 
+class TagStatistics(BaseModel):
+    tag: str
+    count: int
+
+
 class PostRepository(SqlAlchemyRepository):
     def __init__(self, session: Session):
         super().__init__(session, Post)
@@ -55,3 +60,9 @@ class PostRepository(SqlAlchemyRepository):
             .limit(cond.perPage) \
             .offset((cond.page - 1) * cond.perPage) \
             .all()
+
+    def get_tag_statistics(self) -> List[TagStatistics]:
+        ret = self.session.query(PostTag.tag_id, func.count(PostTag.id)) \
+            .group_by(PostTag.tag_id) \
+            .all()
+        return [TagStatistics(tag=name, count=count) for name, count in ret]

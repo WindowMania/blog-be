@@ -8,7 +8,7 @@ import pydantic
 
 from src.unit_of_work import SqlAlchemyUow
 from src.post.models import Post
-from src.post.repositories import PostDynamicCondition
+from src.post.repositories import PostDynamicCondition, TagStatistics
 
 
 class NotFoundPost(Exception):
@@ -69,6 +69,10 @@ class PostService:
         with self.uow:
             self.uow.posts.upsert_tag(tag)
             self.uow.commit()
+
+    def get_tag_statistics(self) -> List[TagStatistics]:
+        with self.uow:
+            return self.uow.posts.get_tag_statistics()
 
     def delete_tag(self, tag: str):
         with self.uow:
