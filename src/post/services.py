@@ -16,6 +16,16 @@ class NotFoundPost(Exception):
         self.message = "존재 하지 않는 작성글"
 
 
+class NotFoundTag(Exception):
+    def __init__(self):
+        self.message = '존재 하지 않는 태그'
+
+
+class FailDeleteTag(Exception):
+    def __init__(self, message):
+        self.message = message
+
+
 class PostDto(pydantic.BaseModel):
     id: str
     title: str
@@ -58,6 +68,17 @@ class PostService:
     def upsert_tag(self, tag: str):
         with self.uow:
             self.uow.posts.upsert_tag(tag)
+            self.uow.commit()
+
+    def delete_tag(self, tag: str):
+        with self.uow:
+            tag_model = self.uow.posts.get_tag(tag)
+            if not tag_model:
+                raise NotFoundTag()
+            count = self.uow.posts.count_post_by_tag(tag)
+            if count:
+                raise FailDeleteTag(f"{count}개의 포스트가 존재 합니다.")
+            self.uow.posts.delete(tag_model)
             self.uow.commit()
 
     def get_post(self, id: str) -> Optional[PostDto]:

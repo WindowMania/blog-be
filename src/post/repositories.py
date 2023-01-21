@@ -2,8 +2,9 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import func, desc
+import sqlalchemy as sa
 
-from src.post.models import Post, Tag
+from src.post.models import Post, Tag, PostTag
 from src.infra.repository import SqlAlchemyRepository
 from pydantic import BaseModel
 
@@ -20,9 +21,16 @@ class PostRepository(SqlAlchemyRepository):
 
     def get_all_tags(self) -> List[Tag]:
         """
-         태그 전체 불러오는것, 캐싱 해야할 듯.
+         태그 전체 불러오는 것, 캐싱 해야할 듯.
         """
         return self.session.query(Tag).all()
+
+    def count_post_by_tag(self, tag: str) -> int:
+        ret = self.session.query(func.count(PostTag.post_id)).filter(PostTag.tag_id == tag).first()
+        return ret[0]
+
+    def get_tag(self, tag: str) -> str:
+        return self.session.query(Tag).filter(Tag.id == tag).first()
 
     def upsert_tag(self, tag: str):
         insert_stmt = insert(Tag).values(id=tag)

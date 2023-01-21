@@ -17,6 +17,9 @@ class SqlAlchemyRepository(AbstractRepository):
     def add(self, model):
         self.session.add(model)
 
+    def delete(self, model):
+        self.session.delete(model)
+
     def get(self, ref):
         return self.session.query(self.model) \
             .filter_by(id=ref) \

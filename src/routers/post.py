@@ -44,6 +44,10 @@ class PostDeleteReq(BaseModel):
     deleted: bool
 
 
+class TagReq(BaseModel):
+    tag: str
+
+
 @router.post('', response_model=PostCreateRes)
 async def create_post(req: PostCreateReq,
                       post_service: PostService = Depends(get_post_service),
@@ -117,3 +121,30 @@ async def delete_post(req: PostDeleteReq,
 #     except Exception as e:
 #         print(e)
 #         raise HTTPException(status_code=500)
+
+
+@router.post('/tag')
+async def create_tag(
+        req: TagReq,
+        post_service=Depends(get_post_service),
+        user: UserEntity = Depends(get_current_user)
+):
+    try:
+        post_service.upsert_tag(req.tag)
+        return 'ok'
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500)
+
+
+@router.delete("/tag")
+async def delete_tag(name: str,
+                     post_service=Depends(get_post_service),
+                     user: UserEntity = Depends(get_current_user)
+                     ):
+    try:
+        post_service.delete_tag(name)
+        return 'ok'
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500)
