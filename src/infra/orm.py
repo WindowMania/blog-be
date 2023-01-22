@@ -15,6 +15,7 @@ file_table = sa.Table("file", metadata,
                       sa.Column("content_type", sa.String(length=255), nullable=False),
                       sa.Column("ext", sa.String(length=255), nullable=False),
                       sa.Column("origin_name", sa.String(length=255), nullable=False),
+                      sa.Column("dir", sa.String(length=255), nullable=False),
                       sa.Column("size", sa.Integer(), nullable=False),
                       sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
                       sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now())

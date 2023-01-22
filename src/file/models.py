@@ -11,6 +11,7 @@ class FileStatus(str, Enum):
 class FileModel:
     id: str
     status: FileStatus
+    dir: str
     content_type: str
     ext: str
     origin_name: str
@@ -19,6 +20,7 @@ class FileModel:
     updated_at: Optional[datetime]
 
     def __init__(self, id: str,
+                 dir: str,
                  status: FileStatus,
                  content_type: str,
                  ext: str,
@@ -27,6 +29,7 @@ class FileModel:
                  ):
         self.id = id
         self.status = status
+        self.dir = dir
         self.content_type = content_type
         self.ext = ext
         self.origin_name = origin_name
