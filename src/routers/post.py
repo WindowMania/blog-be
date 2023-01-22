@@ -58,8 +58,6 @@ async def create_post(req: PostCreateReq,
                       user: UserEntity = Depends(get_current_user)
                       ):
     try:
-        # 밑 태그 추가 하는 API 만들어야 한다..
-        post_service.upsert_tag("All")
         post_id = post_service.create_post(user.id, req.title, req.body, req.tags)
         return PostCreateRes(id=post_id)
     except Exception as e:

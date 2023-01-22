@@ -1,4 +1,12 @@
 [[package]]
+name = "aiofiles"
+version = "22.1.0"
+description = "File support for asyncio."
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[[package]]
 name = "alembic"
 version = "1.9.0"
 description = "A database migration tool for SQLAlchemy."
@@ -406,6 +414,17 @@ pycrypto = ["pycrypto (>=2.6.0,<2.7.0)", "pyasn1"]
 pycryptodome = ["pycryptodome (>=3.3.1,<4.0.0)", "pyasn1"]
 
 [[package]]
+name = "python-multipart"
+version = "0.0.5"
+description = "A streaming multipart parser for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = ">=1.4.0"
+
+[[package]]
 name = "requests"
 version = "2.28.1"
 description = "Python HTTP for Humans."
@@ -543,9 +562,10 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "0391f36fce63aa4efabcc101e70f51d35cb8c99955e1053abad69ea2ea2ef1b6"
+content-hash = "ab748d7fe46e5774b2dbd69954848c0cad6183d43d59f1c103aaa859b3ea5b37"
 
 [metadata.files]
+aiofiles = []
 alembic = []
 anyio = []
 attrs = []
@@ -579,6 +599,7 @@ pymysql = []
 pytest = []
 python-dotenv = []
 python-jose = []
+python-multipart = []
 requests = []
 rsa = []
 six = []
