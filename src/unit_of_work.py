@@ -2,6 +2,7 @@ from __future__ import annotations
 import abc
 from src.user.repositories import UserRepository
 from src.post.repositories import PostRepository
+from src.file.repositories import FileModelRepository
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -33,6 +34,7 @@ class SqlAlchemyUow(AbstractUnitOfWork):
         self.session = self.session_factory()  # type: Session
         self.users = UserRepository(self.session)
         self.posts = PostRepository(self.session)
+        self.files = FileModelRepository(self.session)
         return super().__enter__()
 
     def __exit__(self, *args):

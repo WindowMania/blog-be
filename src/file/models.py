@@ -17,3 +17,19 @@ class FileModel:
     size: int
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
+
+    def __init__(self, id: str,
+                 status: FileStatus,
+                 content_type: str,
+                 ext: str,
+                 origin_name: str,
+                 size: int
+                 ):
+        self.id = id
+        self.status = status
+        self.content_type = content_type
+        self.ext = ext
+        self.origin_name = origin_name
+        self.size = size
+        self.created_at = None
+        self.updated_at = None

@@ -16,6 +16,17 @@ depends_on = None
 
 
 def upgrade() -> None:
+    op.create_table("file",
+                    sa.Column("id", sa.String(length=255), primary_key=True),
+                    sa.Column("status", sa.String(length=255), nullable=False),
+                    sa.Column("content_type", sa.String(length=255), nullable=False),
+                    sa.Column("ext", sa.String(length=255), nullable=False),
+                    sa.Column("origin_name", sa.String(length=255), nullable=False),
+                    sa.Column("size", sa.Integer(), nullable=False),
+                    sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
+                    sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now())
+                    )
+
     op.create_table("tag",
                     sa.Column("id", sa.String(length=255), primary_key=True),
                     sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),

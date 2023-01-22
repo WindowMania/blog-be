@@ -4,9 +4,21 @@ import sqlalchemy.orm as orm
 
 from src.user.models import UserEntity, UserCodeAuthentication
 from src.post.models import Tag, PostTag, Post
+from src.file.models import FileModel
 
 logger = logging.getLogger(__name__)
 metadata = sa.MetaData()
+
+file_table = sa.Table("file", metadata,
+                      sa.Column("id", sa.String(length=255), primary_key=True),
+                      sa.Column("status", sa.String(length=255), nullable=False),
+                      sa.Column("content_type", sa.String(length=255), nullable=False),
+                      sa.Column("ext", sa.String(length=255), nullable=False),
+                      sa.Column("origin_name", sa.String(length=255), nullable=False),
+                      sa.Column("size", sa.Integer(), nullable=False),
+                      sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
+                      sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now())
+                      )
 
 tag_table = sa.Table("tag", metadata,
                      sa.Column("id", sa.String(length=255), primary_key=True),
@@ -61,6 +73,7 @@ def start_mappers():
     logger.info("Starting mappers")
     user_code_authentication_mapper = orm.mapper(UserCodeAuthentication, user_code_authentication_table)
     tag_mapper = orm.mapper(Tag, tag_table)
+    file_mapper = orm.mapper(FileModel, file_table)
     user_mapper = orm.mapper(
         UserEntity, user_table,
         properties={
