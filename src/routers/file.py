@@ -12,7 +12,7 @@ router = APIRouter(tags=["File"])
 
 
 class FileUploadRes(BaseModel):
-    fileId: str
+    file_id: str
 
 
 @router.post('', response_model=FileUploadRes)
@@ -22,8 +22,8 @@ async def create_file(
         user: UserEntity = Depends(get_current_user)
 ):
     try:
-        fileId = await file_service.save_file(user.id, file)
-        return FileUploadRes(fileId=fileId)
+        file_id = await file_service.save_file(user.id, file)
+        return FileUploadRes(file_id=file_id)
     except Exception as e:
         raise HTTPException(500, detail=e.message)
 

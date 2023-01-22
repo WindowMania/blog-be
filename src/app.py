@@ -6,7 +6,7 @@ from src.routers.file import router as file_router
 
 from src.infra.orm import start_mappers
 from fastapi.middleware.cors import CORSMiddleware
-
+from src.dependencies import get_post_service
 
 def create_app() -> FastAPI:
     app_ = FastAPI()
@@ -35,6 +35,8 @@ app.include_router(file_router, prefix="/api/v1/file")
 async def on_start_app():
     logger.info("start server")
     start_mappers()
+    post_service = await get_post_service()
+    post_service.upsert_tag("All")
 
 
 @app.on_event('shutdown')
