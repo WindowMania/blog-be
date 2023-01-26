@@ -34,7 +34,7 @@ post_table = sa.Table("post", metadata,
                       sa.Column("deleted", sa.Boolean, default=False),
                       sa.Column("user_id", sa.String(length=255), sa.ForeignKey("user.id"), nullable=False),
                       sa.Column("title", sa.String(length=255), nullable=False),
-                      sa.Column("body", sa.String(length=255), nullable=False),
+                      sa.Column("body", sa.TEXT(length=255), nullable=False),
                       )
 
 post_tag_table = sa.Table("post_tag", metadata,

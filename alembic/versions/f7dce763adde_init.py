@@ -61,7 +61,7 @@ def upgrade() -> None:
                     sa.Column("deleted", sa.Boolean, default=False),
                     sa.Column("user_id", sa.String(length=255), sa.ForeignKey("user.id"), nullable=False),
                     sa.Column("title", sa.String(length=255), nullable=False),
-                    sa.Column("body", sa.String(length=255), nullable=False),
+                    sa.Column("body", sa.TEXT(), nullable=False),
                     )
 
     op.create_table("post_tag",
