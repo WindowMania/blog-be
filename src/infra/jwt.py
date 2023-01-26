@@ -26,7 +26,7 @@ class JwtToken:
 
 class JwtContext:
 
-    def __init__(self, secret_key: str, algorithm: str = "HS256", expire=30):
+    def __init__(self, secret_key: str, algorithm: str = "HS256", expire=300):
         self.secret_key = secret_key
         self.algorithm = algorithm
         self.expire = expire
