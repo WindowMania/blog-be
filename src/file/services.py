@@ -24,16 +24,16 @@ class FileModelDto(pydantic.BaseModel):
 
 
 class FileService:
-    def __init__(self, uow: SqlAlchemyUow):
+    def __init__(self, uow: SqlAlchemyUow, static_file_root_path: str = "./static"):
         self.uow = uow
-        self.home_dir = "~/blog/static"
+        self.static_file_root_path = static_file_root_path
 
     async def save_file(self, user_id, file: fastapi.UploadFile) -> str:
         file_id = uuid.uuid4().hex
         ext = file.filename.split('.')[1]
         content_type = file.content_type
         origin_filename = file.filename
-        save_dir = self.home_dir + f"/{user_id}"
+        save_dir = self.static_file_root_path + f"/{user_id}"
         Path(save_dir).mkdir(parents=True, exist_ok=True)
         save_dir = save_dir + f"/{file_id}.{ext}"
         await FileRepository.save_file(file, save_dir)
@@ -41,7 +41,7 @@ class FileService:
             self.uow.files.add(FileModel(
                 id=file_id,
                 status=FileStatus.normal,
-                dir=self.home_dir + f"/{user_id}",
+                dir=self.static_file_root_path + f"/{user_id}",
                 content_type=content_type,
                 ext=ext,
                 origin_name=origin_filename,

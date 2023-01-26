@@ -25,6 +25,9 @@ class Config(BaseSettings):
     DB_AUTO_COMMIT: bool = False
     DB_AUTO_FLUSH: bool = False
 
+    # [ FILE ]
+    STATIC_FILE_PATH: str
+
     # [ JWT ]
     JWT_SECRET_KEY: str
 
@@ -58,4 +61,3 @@ class Config(BaseSettings):
     def get_db_url(self):
         return f"mysql+pymysql://{self.DATABASE_USERNAME}:{self.DATABASE_PASSWORD}@" \
                f"{self.DATABASE_ADDRESS}/{self.DATABASE_NAME}"
-

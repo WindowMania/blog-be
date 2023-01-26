@@ -8,6 +8,7 @@ services:
       MYSQL_DATABASE: dev
       MYSQL_ROOT_PASSWORD: 1234
       TZ: Asia/Seoul
+    restart: always
     volumes:
       - mysql-data:/var/lib/mysql
 volumes:

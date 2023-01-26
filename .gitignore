@@ -1,6 +1,6 @@
 .idea
 venv
-
+/static
 
 *.prod
 .pytest_cache

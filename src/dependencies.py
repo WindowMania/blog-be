@@ -26,7 +26,7 @@ user_auth_service = UserAuthService(uow, jwt_context, oauth_context)
 user_email_service = UserEmailService(uow, conf, MockSmtpGmail(conf.GMAIL_ACCOUNT, conf.GMAIL_PASSWORD))
 post_service = PostService(uow)
 post_test_service = PostTestService(uow)
-file_service = FileService(uow)
+file_service = FileService(uow, conf.STATIC_FILE_PATH)
 
 
 async def get_file_service():
