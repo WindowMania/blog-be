@@ -156,7 +156,6 @@ async def delete_tag(name: str,
 async def get_tag_statistics(post_service=Depends(get_post_service)):
     try:
         tags = post_service.get_tag_statistics()
-        print(tags)
         return TagStatisticsRes(tags=tags)
     except Exception as e:
         print(e)
