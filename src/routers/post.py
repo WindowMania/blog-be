@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import List
 
@@ -79,12 +79,13 @@ async def update_post(req: PostUpdateReq,
 
 
 @router.get('/list', response_model=PostListRes)
-async def get_list(page: int,
-                   perPage: int,
+async def get_list(page: int = Query(1),
+                   perPage: int = Query(10),
+                   tags: list[str] = Query(["All"]),
                    post_service: PostService = Depends(get_post_service)
                    ):
     try:
-        cond = PostDynamicCondition(page=page, perPage=perPage, deleted=False)
+        cond = PostDynamicCondition(page=page, perPage=perPage, deleted=False, tags=tags)
         posts = post_service.get_post_dynamic_list(cond)
         return PostListRes(page=page, perPage=perPage, posts=posts)
     except Exception as e:
