@@ -54,9 +54,7 @@ class PostRepository(SqlAlchemyRepository):
     def get_post_dynamic_list(self, cond: PostDynamicCondition):
         query = self.session.query(Post). \
             options(joinedload(Post.user), joinedload(Post.post_tags)) \
-            .filter_by(deleted=cond.deleted) \
-            .filter(PostTag.post_id == Post.id) \
-            .filter(PostTag.tag_id.in_(cond.tags))
+            .filter(~Post.deleted | Post.post_tags.any(PostTag.tag_id.in_(cond.tags)))
 
         return query \
             .order_by(desc(Post.created_at)) \
