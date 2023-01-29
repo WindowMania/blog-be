@@ -4,6 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from src.infra.config import Config
 from src.infra.orm import metadata
+
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
@@ -15,7 +17,7 @@ def get_url():
 def create_engine_by_config(db_config_: Config):
     return create_engine(  # 2
         db_config_.get_db_url(),
-        echo=True
+        echo=False
     )
 
 

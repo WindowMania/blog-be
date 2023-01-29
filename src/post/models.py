@@ -57,7 +57,7 @@ class Post:
         if body:
             self.body = body
         if tags:  # 확인 해봐야함.
-            self.post_tags = [PostTag(self.id, tag) for tag in tags]
+            self.post_tags = [PostTag(self.id, tag) for tag in list(set(tags))]
 
     def set_deleted(self, deleted: bool):
         self.deleted = deleted
