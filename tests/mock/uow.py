@@ -5,4 +5,3 @@ class MockSqlAlchemyUow(SqlAlchemyUow):
     def __init__(self, session_factory):
         super().__init__(session_factory)
 
-    # 흠...

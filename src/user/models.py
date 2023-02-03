@@ -129,7 +129,6 @@ class UserEntity:
         if not r:
             raise FailUserAuthCode(f"{self.account}에 해당 인증 정보가 존재 하지 않습니다")
         auth = r[0]
-        print("뭐지??: ", auth.start_at, auth.end_at)
         if not auth.is_valid_time():
             raise FailUserAuthCode("유효 기간이 만료된 링크")
         return True

@@ -6,8 +6,8 @@ def test_simple_curd_post(user_service, post_service):
     password = "1q2w3e4r1!"
     title = "test title.."
     body = "test body.."
-
     res = user_service.create_user(account, password)
+
     tags = ["개발", "공부", "취미"]
     for tag in tags:
         post_service.upsert_tag(tag)

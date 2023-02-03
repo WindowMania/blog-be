@@ -7,13 +7,18 @@ from datetime import datetime
 import pydantic
 
 from src.unit_of_work import SqlAlchemyUow
-from src.post.models import Post
+from src.post.models import Post, Series, SeriesPost
 from src.post.repositories import PostDynamicCondition, TagStatistics
 
 
 class NotFoundPost(Exception):
     def __init__(self):
         self.message = "존재 하지 않는 작성글"
+
+
+class NotFoundSeries(Exception):
+    def __init__(self):
+        self.message = "존재 하지 않는 시리즈"
 
 
 class NotFoundTag(Exception):
@@ -51,6 +56,45 @@ class PostDto(pydantic.BaseModel):
             username=user.nick_name if user else 'unknown',
             deleted=post.deleted
         )
+
+
+class SeriesPostDto(pydantic.BaseModel):
+    id: str
+    post_id: str
+    series_id: str
+    order_number: int
+
+    @staticmethod
+    def create_by(s: SeriesPost) -> SeriesPostDto:
+        return SeriesPostDto(id=s.id,
+                             post_id=s.post_id,
+                             series_id=s.series_id,
+                             order_number=s.order_number
+                             )
+
+
+class SeriesDto(pydantic.BaseModel):
+    id: str
+    title: str
+    body: str
+    series_post_list: List[SeriesPostDto]
+    user_id: str
+
+    @staticmethod
+    def create_by(s: Series) -> SeriesDto:
+        return SeriesDto(id=s.id,
+                         title=s.title,
+                         body=s.body,
+                         user_id=s.user_id,
+                         series_post_list=[SeriesPostDto.create_by(ps) for ps in s.series_post_list]
+                         )
+
+    def get_post_id_and_order(self) -> str:
+        ret = []
+        for s in self.series_post_list:
+            ret.append((s.order_number, s.post_id))
+        ret.sort()
+        return ret
 
 
 class PostUpdateDto(pydantic.BaseModel):
@@ -153,3 +197,23 @@ class PostTestService:
                 time.sleep(1)
                 self.uow.posts.add(new_post)
                 self.uow.commit()
+
+
+class SeriesService:
+    def __init__(self, uow: SqlAlchemyUow):
+        self.uow = uow
+
+    def create_series(self, user_id: str, title: str, body: str, post_id_list: List[str] = []) -> str:
+        with self.uow:
+            new_series = Series(user_id=user_id, title=title, body=body, post_id_list=post_id_list)
+            self.uow.series.add(new_series)
+            self.uow.commit()
+            return new_series.id
+
+    def find_series(self, series_id: str) -> SeriesDto:
+        with self.uow:
+            found_series = self.uow.series.get(series_id)
+
+            if not found_series:
+                raise NotFoundSeries()
+            return SeriesDto.create_by(found_series)

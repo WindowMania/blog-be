@@ -4,7 +4,7 @@ from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import func, desc
 import sqlalchemy as sa
 
-from src.post.models import Post, Tag, PostTag
+from src.post.models import Post, Tag, PostTag, Series, SeriesPost
 from src.infra.repository import SqlAlchemyRepository
 from pydantic import BaseModel
 
@@ -67,3 +67,8 @@ class PostRepository(SqlAlchemyRepository):
             .group_by(PostTag.tag_id) \
             .all()
         return [TagStatistics(tag=name, count=count) for name, count in ret]
+
+
+class SeriesRepository(SqlAlchemyRepository):
+    def __init__(self, session: Session):
+        super().__init__(session, Series)

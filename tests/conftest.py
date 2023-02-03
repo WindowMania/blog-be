@@ -10,7 +10,7 @@ from src.user.services import UserService, UserEmailService, UserAuthService
 from src.infra.email import MockSmtpGmail
 from src.infra.jwt import JwtContext
 from src.infra.oauth import OAuthContext
-from src.post.services import PostService
+from src.post.services import PostService, SeriesService
 
 conf = Config.get_config("test")
 
@@ -41,7 +41,7 @@ def uow(db):
     session_maker = db['session_maker']
     uow__ = MockSqlAlchemyUow(session_maker)
     yield uow__
-    # truncate(db['engine'])
+    truncate(db['engine'])
 
 
 @pytest.fixture(scope="function")
@@ -65,3 +65,8 @@ def user_auth_service(uow):
 @pytest.fixture(scope="function")
 def post_service(uow):
     yield PostService(uow)
+
+
+@pytest.fixture(scope="function")
+def series_service(uow):
+    yield SeriesService(uow)

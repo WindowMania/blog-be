@@ -70,8 +70,13 @@ class SeriesPost:
     updated_at: datetime
     series_id: str
     post_id: str
-
     post: Post
+
+    def __init__(self, series_id: str, post_id: str, order_number: int):
+        self.id = uuid.uuid4().hex
+        self.order_number = order_number
+        self.series_id = series_id
+        self.post_id = post_id
 
 
 class Series:
@@ -84,3 +89,10 @@ class Series:
 
     user: UserEntity
     series_post_list: List[SeriesPost]
+
+    def __init__(self, user_id: str, title: str, body: str, post_id_list: List[int] = []):
+        self.id = uuid.uuid4().hex
+        self.user_id = user_id
+        self.title = title
+        self.body = body
+        self.series_post_list = [SeriesPost(self.id, post_id_list[i], i) for i in range(len(post_id_list))]
