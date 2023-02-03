@@ -61,3 +61,26 @@ class Post:
 
     def set_deleted(self, deleted: bool):
         self.deleted = deleted
+
+
+class SeriesPost:
+    id: str
+    order_number: int
+    created_at: datetime
+    updated_at: datetime
+    series_id: str
+    post_id: str
+
+    post: Post
+
+
+class Series:
+    id: str
+    user_id: str
+    title: str
+    body: str
+    created_at: datetime
+    updated_at: datetime
+
+    user: UserEntity
+    series_post_list: List[SeriesPost]

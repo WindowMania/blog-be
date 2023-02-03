@@ -3,7 +3,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from src.user.models import UserEntity, UserCodeAuthentication
-from src.post.models import Tag, PostTag, Post
+from src.post.models import Tag, PostTag, Post, SeriesPost, Series
 from src.file.models import FileModel
 
 logger = logging.getLogger(__name__)
@@ -36,6 +36,25 @@ post_table = sa.Table("post", metadata,
                       sa.Column("title", sa.String(length=255), nullable=False),
                       sa.Column("body", sa.TEXT(length=255), nullable=False),
                       )
+
+series_table = sa.Table("series", metadata,
+                        sa.Column("id", sa.String(length=255), primary_key=True),
+                        sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
+                        sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(), onupdate=sa.func.now()),
+                        sa.Column("user_id", sa.String(length=255), sa.ForeignKey("user.id"), nullable=False),
+                        sa.Column("title", sa.String(length=255), nullable=False),
+                        sa.Column("body", sa.TEXT(length=255), nullable=False),
+                        )
+
+series_post_table = sa.Table("series_post", metadata,
+                             sa.Column("id", sa.String(length=255), primary_key=True),
+                             sa.Column("created_at", sa.DateTime(), server_default=sa.func.now()),
+                             sa.Column("updated_at", sa.DateTime(), server_default=sa.func.now(),
+                                       onupdate=sa.func.now()),
+                             sa.Column("order_number", sa.Integer(), nullable=False),
+                             sa.Column("post_id", sa.String(length=255), sa.ForeignKey("post.id"), nullable=False),
+                             sa.Column("series_id", sa.String(length=255), sa.ForeignKey("series.id"), nullable=False),
+                             )
 
 post_tag_table = sa.Table("post_tag", metadata,
                           sa.Column("id", sa.String(length=255), primary_key=True),
@@ -84,8 +103,16 @@ def start_mappers():
         }
     )
     post_tag_mapper = orm.mapper(PostTag, post_tag_table)
-
     post_mapper = orm.mapper(Post, post_table, properties={
         "user": orm.relationship(user_mapper, lazy="joined"),
         "post_tags": orm.relationship(post_tag_mapper, lazy="joined", cascade="all,delete-orphan")
+    })
+
+    series_post_mapper = orm.mapper(SeriesPost, series_post_table, properties={
+        "post": orm.relationship(post_mapper, lazy="joined")
+    })
+
+    series_mapper = orm.mapper(Series, series_table, properties={
+        "user": orm.relationship(user_mapper, lazy="joined"),
+        "series_post_list": orm.relationship(series_post_mapper, lazy="joined", cascade="all,delete-orphan")
     })
