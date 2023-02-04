@@ -16,6 +16,11 @@ class PostDynamicCondition(BaseModel):
     tags: List[str]
 
 
+class SeriesDynamicCondition(BaseModel):
+    page: int
+    perPage: int
+
+
 class TagStatistics(BaseModel):
     tag: str
     count: int
@@ -72,3 +77,11 @@ class PostRepository(SqlAlchemyRepository):
 class SeriesRepository(SqlAlchemyRepository):
     def __init__(self, session: Session):
         super().__init__(session, Series)
+
+    def get_series_dynamic_list(self, cond: SeriesDynamicCondition):
+        return self.session.query(Series) \
+            .options(joinedload(Series.series_post_list)) \
+            .order_by(desc(Series.created_at)) \
+            .limit(cond.perPage) \
+            .offset((cond.page - 1) * cond.perPage) \
+            .all()

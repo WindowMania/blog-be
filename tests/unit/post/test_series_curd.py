@@ -47,7 +47,6 @@ def test_series_curd(series_service, post_service, user_service, user_auth_servi
         body=changed_body,
         series_post_list=series_post_list
     ))
-
     found_series = series_service.find_series(series_id=series_id)
     assert found_series.title == changed_title
     assert found_series.body == changed_body
@@ -60,3 +59,19 @@ def test_series_curd(series_service, post_service, user_service, user_auth_servi
     series_service.remove_series(series_id)
     with pytest.raises(NotFoundSeries):
         found_series = series_service.find_series(series_id=series_id)
+
+
+def test_series_listing(user_service, user_email_service, user_auth_service, series_service):
+    created_user = create_test_user(user_service, user_email_service, user_auth_service)
+
+    for i in range(17):
+        series_service.create_series(user_id=created_user.user_id,
+                                     title="title_" + str(i),
+                                     body="body_" + str(i)
+                                     )
+
+    ret = series_service.get_list(perPage=10, page=1)
+    assert len(ret) == 10
+
+    ret = series_service.get_list(page=2, perPage=10)
+    assert len(ret) == 7

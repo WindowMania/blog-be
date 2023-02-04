@@ -8,7 +8,7 @@ import pydantic
 
 from src.unit_of_work import SqlAlchemyUow
 from src.post.models import Post, Series, SeriesPost
-from src.post.repositories import PostDynamicCondition, TagStatistics
+from src.post.repositories import PostDynamicCondition, TagStatistics, SeriesDynamicCondition
 
 
 class NotFoundPost(Exception):
@@ -250,3 +250,9 @@ class SeriesService:
                                 series_post_order_list=post_order_list
                                 )
             self.uow.commit()
+
+    def get_list(self, perPage: int, page: int) -> List[SeriesDto]:
+        with self.uow:
+            listing_series = self.uow.series \
+                .get_series_dynamic_list(SeriesDynamicCondition(page=page, perPage=perPage))
+            return [SeriesDto.create_by(s) for s in listing_series]
