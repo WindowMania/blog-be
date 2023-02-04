@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datetime import datetime
 
 import pydantic
@@ -72,6 +72,9 @@ class SeriesPostDto(pydantic.BaseModel):
                              order_number=s.order_number
                              )
 
+    def set_order_number(self, num: int):
+        self.order_number = num
+
 
 class SeriesDto(pydantic.BaseModel):
     id: str
@@ -89,7 +92,7 @@ class SeriesDto(pydantic.BaseModel):
                          series_post_list=[SeriesPostDto.create_by(ps) for ps in s.series_post_list]
                          )
 
-    def get_post_id_and_order(self) -> str:
+    def get_post_id_and_order(self) -> List[Tuple[int, str]]:
         ret = []
         for s in self.series_post_list:
             ret.append((s.order_number, s.post_id))
@@ -102,6 +105,13 @@ class PostUpdateDto(pydantic.BaseModel):
     title: Optional[str]
     body: Optional[str]
     tags: List[str]
+
+
+class SeriesUpdateDto(pydantic.BaseModel):
+    id: str
+    title: Optional[str]
+    body: Optional[str]
+    series_post_list: List[SeriesPostDto]
 
 
 class PostService:
@@ -217,3 +227,26 @@ class SeriesService:
             if not found_series:
                 raise NotFoundSeries()
             return SeriesDto.create_by(found_series)
+
+    def remove_series(self, series_id: str):
+        with self.uow:
+            found_series = self.uow.series.get(series_id)
+            if not found_series:
+                raise NotFoundSeries()
+            self.uow.series.delete(found_series)
+            self.uow.commit()
+
+    def update_series(self, update_dto: SeriesUpdateDto):
+        with self.uow:
+            found_series: Optional[Series] = self.uow.series.get(update_dto.id)
+            if not found_series:
+                raise NotFoundSeries()
+
+            post_id_list = list(map(lambda a: a.post_id, update_dto.series_post_list))
+            post_order_list = list(map(lambda a: a.order_number, update_dto.series_post_list))
+            found_series.update(title=update_dto.title,
+                                body=update_dto.body,
+                                series_post_id_list=post_id_list,
+                                series_post_order_list=post_order_list
+                                )
+            self.uow.commit()

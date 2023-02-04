@@ -96,3 +96,14 @@ class Series:
         self.title = title
         self.body = body
         self.series_post_list = [SeriesPost(self.id, post_id_list[i], i) for i in range(len(post_id_list))]
+
+    def update(self, title: str, body: str, series_post_id_list: List[str], series_post_order_list: List[str]):
+        if len(title) >= 1:
+            self.title = title
+        if body:
+            self.body = body
+        if len(series_post_id_list) == len(series_post_order_list):
+            self.series_post_list = [SeriesPost(self.id,
+                                                series_post_id_list[i],
+                                                series_post_order_list[i])
+                                     for i in range(len(series_post_id_list))]
