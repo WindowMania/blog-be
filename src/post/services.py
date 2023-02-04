@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import time
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 from datetime import datetime
 
 import pydantic
@@ -65,7 +65,7 @@ class SeriesPostDto(pydantic.BaseModel):
     order_number: int
 
     @staticmethod
-    def create_by(s: SeriesPost) -> SeriesPostDto:
+    def mapping(s: SeriesPost) -> SeriesPostDto:
         return SeriesPostDto(id=s.id,
                              post_id=s.post_id,
                              series_id=s.series_id,
@@ -76,20 +76,46 @@ class SeriesPostDto(pydantic.BaseModel):
         self.order_number = num
 
 
+class SeriesPostWithPostDto(pydantic.BaseModel):
+    id: str
+    post_id: str
+    series_id: str
+    order_number: int
+    post: PostDto
+
+    @staticmethod
+    def mapping(s: SeriesPost) -> SeriesPostDto:
+        return SeriesPostWithPostDto(id=s.id,
+                                     post_id=s.post_id,
+                                     series_id=s.series_id,
+                                     order_number=s.order_number,
+                                     post=PostDto.mapping(s.post)
+                                     )
+
+
 class SeriesDto(pydantic.BaseModel):
     id: str
     title: str
     body: str
-    series_post_list: List[SeriesPostDto]
+    series_post_list: List[Union[SeriesPostWithPostDto, SeriesPostDto]]
     user_id: str
 
     @staticmethod
-    def create_by(s: Series) -> SeriesDto:
+    def mapping(s: Series) -> SeriesDto:
         return SeriesDto(id=s.id,
                          title=s.title,
                          body=s.body,
                          user_id=s.user_id,
-                         series_post_list=[SeriesPostDto.create_by(ps) for ps in s.series_post_list]
+                         series_post_list=[SeriesPostDto.mapping(ps) for ps in s.series_post_list]
+                         )
+
+    @staticmethod
+    def mapping_with_post(s: Series) -> SeriesDto:
+        return SeriesDto(id=s.id,
+                         title=s.title,
+                         body=s.body,
+                         user_id=s.user_id,
+                         series_post_list=[SeriesPostWithPostDto.mapping(ps) for ps in s.series_post_list]
                          )
 
     def get_post_id_and_order(self) -> List[Tuple[int, str]]:
@@ -226,7 +252,7 @@ class SeriesService:
 
             if not found_series:
                 raise NotFoundSeries()
-            return SeriesDto.create_by(found_series)
+            return SeriesDto.mapping(found_series)
 
     def remove_series(self, series_id: str):
         with self.uow:
@@ -255,4 +281,11 @@ class SeriesService:
         with self.uow:
             listing_series = self.uow.series \
                 .get_series_dynamic_list(SeriesDynamicCondition(page=page, perPage=perPage))
-            return [SeriesDto.create_by(s) for s in listing_series]
+            return [SeriesDto.mapping(s) for s in listing_series]
+
+    def get_series_with_post(self, series_id: str) -> Optional[SeriesDto]:
+        with self.uow:
+            found_series = self.uow.series.get_series_with_post(series_id)
+            if not found_series:
+                raise NotFoundSeries()
+            return SeriesDto.mapping_with_post(found_series)

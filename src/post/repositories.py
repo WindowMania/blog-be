@@ -85,3 +85,8 @@ class SeriesRepository(SqlAlchemyRepository):
             .limit(cond.perPage) \
             .offset((cond.page - 1) * cond.perPage) \
             .all()
+
+    def get_series_with_post(self, series_id: str):
+        return self.session.query(Series) \
+            .options(joinedload(Series.series_post_list).joinedload(SeriesPost.post)) \
+            .filter(Series.id == series_id).first()
