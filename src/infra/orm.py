@@ -109,7 +109,7 @@ def start_mappers():
     })
 
     series_post_mapper = orm.mapper(SeriesPost, series_post_table, properties={
-        "post": orm.relationship(post_mapper, lazy="joined")
+        "post": orm.relationship(post_mapper)
     })
 
     series_mapper = orm.mapper(Series, series_table, properties={

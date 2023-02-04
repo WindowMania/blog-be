@@ -93,6 +93,7 @@ def test_series_with_post(user_service, user_email_service, user_auth_service, p
     found_post_id_dict = {
         fp.id: [fp.title, fp.body, fp.tags] for fp in found_post_list
     }
+
     for post in posts:
         assert post.title == found_post_id_dict[post.id][0]
         assert post.body == found_post_id_dict[post.id][1]
