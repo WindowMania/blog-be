@@ -17,7 +17,7 @@ def get_url():
 def create_engine_by_config(db_config_: Config):
     return create_engine(  # 2
         db_config_.get_db_url(),
-        echo=False
+        echo=True
     )
 
 

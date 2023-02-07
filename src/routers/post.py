@@ -82,10 +82,13 @@ async def update_post(req: PostUpdateReq,
 async def get_list(page: int = Query(1),
                    perPage: int = Query(10),
                    tags: list[str] = Query(["All"]),
+                   title: str = Query(None),
                    post_service: PostService = Depends(get_post_service)
                    ):
     try:
-        cond = PostDynamicCondition(page=page, perPage=perPage, deleted=False, tags=tags)
+        cond = PostDynamicCondition(page=page, perPage=perPage, deleted=False, tags=tags,
+                                    title=title
+                                    )
         posts = post_service.get_post_dynamic_list(cond)
         return PostListRes(page=page, perPage=perPage, posts=posts)
     except Exception as e:

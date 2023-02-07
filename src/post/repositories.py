@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
-from typing import List
+from typing import List, Optional
 from sqlalchemy.dialects.mysql import insert
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, and_
 import sqlalchemy as sa
 
 from src.post.models import Post, Tag, PostTag, Series, SeriesPost
@@ -14,6 +14,7 @@ class PostDynamicCondition(BaseModel):
     perPage: int
     deleted: bool
     tags: List[str]
+    title: Optional[str]
 
 
 class SeriesDynamicCondition(BaseModel):
@@ -57,11 +58,15 @@ class PostRepository(SqlAlchemyRepository):
             first()
 
     def get_post_dynamic_list(self, cond: PostDynamicCondition):
-        query = self.session.query(Post). \
-            options(joinedload(Post.user), joinedload(Post.post_tags)) \
-            .filter(~Post.deleted & Post.post_tags.any(PostTag.tag_id.in_(cond.tags)))
-
-        return query \
+        where_cond = and_(
+            Post.deleted == cond.deleted,
+            Post.post_tags.any(PostTag.tag_id.in_(cond.tags)),
+        )
+        if cond.title and len(cond.title) >= 2:
+            where_cond = and_(where_cond, Post.title.like('%' + cond.title + "%"))
+        return self.session.query(Post) \
+            .options(joinedload(Post.user), joinedload(Post.post_tags)) \
+            .filter(and_(where_cond)) \
             .order_by(desc(Post.created_at)) \
             .limit(cond.perPage) \
             .offset((cond.page - 1) * cond.perPage) \
