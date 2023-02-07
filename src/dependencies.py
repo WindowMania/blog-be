@@ -8,7 +8,7 @@ from src.infra.config import Config
 from src.unit_of_work import SqlAlchemyUow
 from src.infra.oauth import OAuthContext
 from src.infra.email import MockSmtpGmail
-from src.post.services import PostService, PostTestService
+from src.post.services import PostService, PostTestService, SeriesService
 from src.file.services import FileService
 
 conf = Config.get_config()
@@ -27,6 +27,11 @@ user_email_service = UserEmailService(uow, conf, MockSmtpGmail(conf.GMAIL_ACCOUN
 post_service = PostService(uow)
 post_test_service = PostTestService(uow)
 file_service = FileService(uow, conf.STATIC_FILE_PATH)
+series_service = SeriesService(uow)
+
+
+async def get_series_service():
+    return series_service
 
 
 async def get_file_service():

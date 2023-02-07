@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from typing import List
 
-from src.dependencies import get_post_service, get_current_user, get_post_test_service
-from src.post.services import PostService, PostDto, PostUpdateDto, PostDynamicCondition, TagStatistics
+from src.dependencies import get_post_service, get_current_user, get_series_service
+from src.post.services import PostService, SeriesService, PostDto, PostUpdateDto, PostDynamicCondition, TagStatistics
 from src.user.models import UserEntity
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,17 @@ class PostUpdateReq(BaseModel):
     tags: List[str]
 
 
+class SeriesCreateReq(BaseModel):
+    title: str
+    body: str
+    post_id_list: List[str]
+
+
 class PostCreateRes(BaseModel):
+    id: str
+
+
+class SeriesCreateRes(BaseModel):
     id: str
 
 
@@ -60,6 +70,19 @@ async def create_post(req: PostCreateReq,
     try:
         post_id = post_service.create_post(user.id, req.title, req.body, req.tags)
         return PostCreateRes(id=post_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.post('/series', response_model=SeriesCreateRes)
+async def create_series(req: SeriesCreateReq,
+                        series_service: SeriesService = Depends(get_series_service),
+                        user: UserEntity = Depends(get_current_user)
+                        ):
+    try:
+        series_id = series_service.create_series(user_id=user.id, title=req.title, body=req.body,
+                                                 post_id_list=req.post_id_list)
+        return SeriesCreateRes(id=series_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=e.message)
 
