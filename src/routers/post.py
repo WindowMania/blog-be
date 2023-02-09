@@ -4,7 +4,8 @@ from pydantic import BaseModel
 from typing import List
 
 from src.dependencies import get_post_service, get_current_user, get_series_service
-from src.post.services import PostService, SeriesService, PostDto, PostUpdateDto, PostDynamicCondition, TagStatistics
+from src.post.services import PostService, SeriesService, PostDto, PostUpdateDto, PostDynamicCondition, TagStatistics, \
+    SeriesDto, SeriesUpdateDto
 from src.user.models import UserEntity
 
 logger = logging.getLogger(__name__)
@@ -62,6 +63,23 @@ class TagStatisticsRes(BaseModel):
     tags: List[TagStatistics]
 
 
+class SeriesListRes(BaseModel):
+    page: int
+    perPage: int
+    seriesList: List[SeriesDto]
+
+
+class SeriesRes(BaseModel):
+    series: SeriesDto
+
+
+class SeriesUpdate(BaseModel):
+    id: str
+    title: str
+    body: str
+    postIdList: List[str]
+
+
 @router.post('', response_model=PostCreateRes)
 async def create_post(req: PostCreateReq,
                       post_service: PostService = Depends(get_post_service),
@@ -83,6 +101,71 @@ async def create_series(req: SeriesCreateReq,
         series_id = series_service.create_series(user_id=user.id, title=req.title, body=req.body,
                                                  post_id_list=req.post_id_list)
         return SeriesCreateRes(id=series_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.get("/series-with-post", response_model=SeriesRes)
+async def get_series_with_post(seriesId: str = Query(""),
+                               series_service: SeriesService = Depends(get_series_service)
+                               ):
+    try:
+        ret = series_service.get_series_with_post(series_id=seriesId)
+        return SeriesRes(series=ret)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.get('/series', response_model=SeriesRes)
+async def get_series(seriesId: str = Query(""),
+                     series_service: SeriesService = Depends(get_series_service)
+                     ):
+    try:
+        ret = series_service.find_series(series_id=seriesId)
+        return SeriesRes(series=ret)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.delete("/series")
+async def delete_series(seriesId: str = Query(""),
+                        series_service: SeriesService = Depends(get_series_service),
+                        user: UserEntity = Depends(get_current_user)
+                        ):
+    try:
+        series_service.remove_series(series_id=seriesId)
+        return 'ok'
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.put("/series")
+async def update_series(req: SeriesUpdate,
+                        series_service: SeriesService = Depends(get_series_service),
+                        user: UserEntity = Depends(get_current_user)
+                        ):
+    try:
+        series_service.update_series(
+            SeriesUpdateDto(
+                id=req.id,
+                title=req.title,
+                body=req.body,
+                series_post_list=req.postIdList
+            )
+        )
+        return 'ok'
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.get("/series/list", response_model=SeriesListRes)
+async def get_series_list(page: int = Query(1),
+                          perPage: int = Query(10),
+                          series_service: SeriesService = Depends(get_series_service)
+                          ):
+    try:
+        ret = series_service.get_list(page=page, perPage=perPage)
+        return SeriesListRes(page=page, perPage=perPage, seriesList=ret)
     except Exception as e:
         raise HTTPException(status_code=500, detail=e.message)
 

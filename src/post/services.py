@@ -99,23 +99,31 @@ class SeriesDto(pydantic.BaseModel):
     body: str
     series_post_list: List[Union[SeriesPostWithPostDto, SeriesPostDto]]
     user_id: str
+    updated_at: str
+    created_at: str
 
     @staticmethod
     def mapping(s: Series) -> SeriesDto:
+        sorted_post_list = sorted(s.series_post_list, key=lambda sp: sp.order_number)
         return SeriesDto(id=s.id,
                          title=s.title,
                          body=s.body,
                          user_id=s.user_id,
-                         series_post_list=[SeriesPostDto.mapping(ps) for ps in s.series_post_list]
+                         series_post_list=[SeriesPostDto.mapping(ps) for ps in sorted_post_list],
+                         updated_at=str(s.updated_at),
+                         created_at=str(s.created_at)
                          )
 
     @staticmethod
     def mapping_with_post(s: Series) -> SeriesDto:
+        sorted_post_list = sorted(s.series_post_list, key=lambda sp: sp.order_number)
         return SeriesDto(id=s.id,
                          title=s.title,
                          body=s.body,
                          user_id=s.user_id,
-                         series_post_list=[SeriesPostWithPostDto.mapping(ps) for ps in s.series_post_list]
+                         series_post_list=[SeriesPostWithPostDto.mapping(ps) for ps in sorted_post_list],
+                         updated_at=str(s.updated_at),
+                         created_at=str(s.created_at)
                          )
 
     def get_post_id_and_order(self) -> List[Tuple[int, str]]:
@@ -137,7 +145,8 @@ class SeriesUpdateDto(pydantic.BaseModel):
     id: str
     title: Optional[str]
     body: Optional[str]
-    series_post_list: List[SeriesPostDto]
+    # series_post_list: List[SeriesPostDto]
+    series_post_list: List[str]
 
 
 class PostService:
@@ -267,13 +276,12 @@ class SeriesService:
             found_series: Optional[Series] = self.uow.series.get(update_dto.id)
             if not found_series:
                 raise NotFoundSeries()
-
-            post_id_list = list(map(lambda a: a.post_id, update_dto.series_post_list))
-            post_order_list = list(map(lambda a: a.order_number, update_dto.series_post_list))
+            # post_id_list = list(map(lambda a: a.post_id, update_dto.series_post_list))
+            # post_order_list = list(map(lambda a: a.order_number, update_dto.series_post_list))
             found_series.update(title=update_dto.title,
                                 body=update_dto.body,
-                                series_post_id_list=post_id_list,
-                                series_post_order_list=post_order_list
+                                series_post_id_list=update_dto.series_post_list,
+                                series_post_order_list=[i for i in range(len(update_dto.series_post_list))]
                                 )
             self.uow.commit()
 
