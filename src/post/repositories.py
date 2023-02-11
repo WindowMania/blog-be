@@ -95,3 +95,10 @@ class SeriesRepository(SqlAlchemyRepository):
         return self.session.query(Series) \
             .options(joinedload(Series.series_post_list).joinedload(SeriesPost.post)) \
             .filter(Series.id == series_id).first()
+
+    def get_series_by_post_id(self, post_id) -> List[Series]:
+        return self.session.query(Series) \
+            .options(joinedload(Series.series_post_list).joinedload(SeriesPost.post)) \
+            .filter(
+            Series.series_post_list.any(SeriesPost.post_id == post_id)
+        ).all()

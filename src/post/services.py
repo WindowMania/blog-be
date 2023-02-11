@@ -297,3 +297,8 @@ class SeriesService:
             if not found_series:
                 raise NotFoundSeries()
             return SeriesDto.mapping_with_post(found_series)
+
+    def get_series_by_post_id(self, post_id: str) -> List[SeriesDto]:
+        with self.uow:
+            series_list = self.uow.series.get_series_by_post_id(post_id=post_id)
+            return [SeriesDto.mapping_with_post(s) for s in series_list]

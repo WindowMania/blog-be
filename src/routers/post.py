@@ -80,6 +80,10 @@ class SeriesUpdate(BaseModel):
     postIdList: List[str]
 
 
+class SeriesListByPostId(BaseModel):
+    seriesList: List[SeriesDto]
+
+
 @router.post('', response_model=PostCreateRes)
 async def create_post(req: PostCreateReq,
                       post_service: PostService = Depends(get_post_service),
@@ -166,6 +170,18 @@ async def get_series_list(page: int = Query(1),
     try:
         ret = series_service.get_list(page=page, perPage=perPage)
         return SeriesListRes(page=page, perPage=perPage, seriesList=ret)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.message)
+
+
+@router.get("/series/post-id/{post_id}", response_model=SeriesListByPostId)
+async def get_series_by_post_id(
+        post_id: str,
+        series_service: SeriesService = Depends(get_series_service)
+):
+    try:
+        series_list = series_service.get_series_by_post_id(post_id=post_id)
+        return SeriesListByPostId(seriesList=series_list)
     except Exception as e:
         raise HTTPException(status_code=500, detail=e.message)
 
